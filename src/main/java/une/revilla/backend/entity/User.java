@@ -5,6 +5,9 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import java.time.LocalDateTime;
@@ -29,15 +32,24 @@ public class User {
     @Column(name = "user_id")
     private Long id;
 
+    @NotBlank
+    @Size(max = 30)
     @Column(name = "username")
     private String username;
 
+    @NotBlank
+    @Size(max = 255)
     @Column(name = "password")
     private String password;
 
+    @NotBlank
+    @Size(max = 35)
+    @Email
     @Column(name = "email")
     private String email;
 
+    @NotBlank
+    @Size(max = 40)
     @Column(name = "full_name")
     private String fullName;
 
@@ -52,7 +64,7 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Collection<Task> tasks = new ArrayList<>();
 
-    @ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),

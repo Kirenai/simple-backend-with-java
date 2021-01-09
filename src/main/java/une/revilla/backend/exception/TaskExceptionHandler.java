@@ -10,10 +10,10 @@ import une.revilla.backend.exception.task.TaskNoSuchElementException;
 
 import java.time.LocalDateTime;
 
-/*@RestControllerAdvice*/
+@RestControllerAdvice
 public class TaskExceptionHandler {
 
-    /*@ExceptionHandler(TaskNoSuchElementException.class)
+    @ExceptionHandler(TaskNoSuchElementException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public TaskErrorMessage noSuchElementException(TaskNoSuchElementException ex, WebRequest request) {
         return new TaskErrorMessage(
@@ -22,5 +22,5 @@ public class TaskExceptionHandler {
                 ex.getMessage(),
                 request.getDescription(false)
         );
-    }*/
+    }
 }

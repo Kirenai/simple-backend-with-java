@@ -8,58 +8,72 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import une.revilla.backend.entity.Task;
 import une.revilla.backend.entity.User;
+import une.revilla.backend.payload.request.RegisterRequest;
+import une.revilla.backend.service.TaskService;
 import une.revilla.backend.service.UserService;
 
 import java.util.List;
 
 @RestController
-@CrossOrigin(origins = "*", methods = {
-        RequestMethod.GET, RequestMethod.POST,
-        RequestMethod.PUT, RequestMethod.DELETE
-})
 @RequestMapping("/api/user")
 public class UserController {
 
     private final UserService userService;
+    private final TaskService taskService;
 
     @Autowired
-    public UserController(@Qualifier("userService") UserService userService) {
+    public UserController(@Qualifier("userService") UserService userService,
+                          @Qualifier("taskService") TaskService taskService) {
         this.userService = userService;
+        this.taskService = taskService;
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     public ResponseEntity<List<User>> findAllUsers() {
-        System.out.println("get");
         List<User> allUsers = this.userService.findAllUsers();
         return new ResponseEntity<>(allUsers, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
     public ResponseEntity<User> findUser(@PathVariable Long id) {
         User user = this.userService.findUserById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PostMapping("/add")
-//    @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<User> saveUser(@RequestBody User user) {
-        User userSaved = this.userService.saveUser(user);
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
+    public ResponseEntity<User> saveUser(@RequestBody RegisterRequest registerRequest) {
+        User userSaved = this.userService.saveUser(registerRequest);
         return new ResponseEntity<>(userSaved, HttpStatus.CREATED);
     }
 
     @PostMapping(path = "/add/task/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
     public ResponseEntity<User> addTaskUser(@PathVariable Long id, @RequestBody Task task) {
         User userWithTask = this.userService.addTaskUser(id, task);
         return new ResponseEntity<>(userWithTask, HttpStatus.OK);
     }
 
+    @PutMapping(path = "/update/task/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
+    public ResponseEntity<User> updateTaskUser(@PathVariable("id") Long userId,
+                                               @RequestBody Task taskToUpdate) {
+//        Task task = this.taskService.updateTask(id, taskToUpdate);
+        User user = this.userService.updateTaskUser(userId, taskToUpdate);
+        return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
     @PutMapping("/update/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userData) {
         User user = this.userService.updateUser(id, userData);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @DeleteMapping("/delete/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     public ResponseEntity<User> deleteUser(@PathVariable Long id) {
         User user = this.userService.deleteUserById(id);
         return new ResponseEntity<>(user, HttpStatus.OK);
