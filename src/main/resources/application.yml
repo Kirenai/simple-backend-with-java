@@ -19,3 +19,8 @@ spring:
       hibernate:
         format_sql: false
         dialect: org.hibernate.dialect.MySQL5Dialect
+
+server:
+  error:
+    include-message: always
+    include-binding-errors: always

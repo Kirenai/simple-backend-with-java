@@ -1,9 +1,6 @@
 package une.revilla.backend.payload.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.validation.constraints.NotBlank;
 
@@ -11,11 +8,12 @@ import javax.validation.constraints.NotBlank;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@ToString
 public class LoginRequest {
 
-    @NotBlank
+    @NotBlank(message = "Please provide Username")
     private String username;
-    @NotBlank
+    @NotBlank(message = "Please provide Password")
     private String password;
 
 }

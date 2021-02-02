@@ -23,4 +23,9 @@ public class TaskExceptionHandler {
                 request.getDescription(false)
         );
     }
+
+//    @ResponseStatus(HttpStatus.NOT_FOUND)
+//    public TaskErrorMessage UserTaskNoSuchElementException(WebRequest request) {
+//        return null;
+//    }
 }

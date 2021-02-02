@@ -1,9 +1,12 @@
 package une.revilla.backend.controller;
 
 import io.jsonwebtoken.Jwts;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,12 +20,16 @@ import une.revilla.backend.payload.response.MessageResponse;
 import une.revilla.backend.service.UserService;
 
 import javax.crypto.SecretKey;
+import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.Date;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/auth")
 public class AuthController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     private final AuthenticationManager authenticationManager;
     private final SecretKey secretKey;
@@ -40,12 +47,18 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticateUser(@RequestBody LoginRequest loginRequest) {
-        Authentication authenticate = this.authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsername(),
-                        loginRequest.getPassword())
-        );
+    public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
+        Authentication authenticate;
+        try {
+             authenticate = this.authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            loginRequest.getUsername(),
+                            loginRequest.getPassword())
+            );
+        } catch (BadCredentialsException ex) {
+            logger.info("Invalid credentials by user {}", loginRequest);
+            throw new BadCredentialsException("Wrong user, try again");
+        }
 
         SecurityContextHolder.getContext().setAuthentication(authenticate);
         String token = Jwts.builder()
@@ -59,7 +72,7 @@ public class AuthController {
         User user = this.userService.findByUsername(loginRequest.getUsername());
         return ResponseEntity.ok(new JwtResponse(
                 user.getId(),
-                token,
+                "Bearer "+token,
                 user.getUsername(),
                 user.getEmail(),
                 user.getFullName(),
@@ -68,14 +81,12 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@RequestBody RegisterRequest registerRequest) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         if (this.userService.existsByEmail(registerRequest.getEmail())) {
             return ResponseEntity.badRequest()
                     .body(new MessageResponse("E/R: Email is already exists!"));
         }
-
         this.userService.saveUser(registerRequest);
-
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 }

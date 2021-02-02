@@ -3,6 +3,7 @@ package une.revilla.backend.service;
 import une.revilla.backend.entity.Task;
 import une.revilla.backend.entity.User;
 import une.revilla.backend.payload.request.RegisterRequest;
+import une.revilla.backend.payload.response.MessageResponse;
 
 import java.util.List;
 
@@ -16,7 +17,7 @@ public interface UserService {
 
     User saveUser(RegisterRequest registerRequest);
 
-    User updateUser(Long id, User userData);
+    MessageResponse updateUser(Long id, Long idRole, User userData);
 
     User deleteUserById(Long id);
 

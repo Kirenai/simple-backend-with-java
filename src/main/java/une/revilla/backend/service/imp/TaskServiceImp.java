@@ -54,5 +54,11 @@ public class TaskServiceImp implements TaskService {
         this.taskRepository.delete(taskFound);
         return taskFound;
     }
+
+    @Override
+    public List<Task> findTaskByUserId(Long id) {
+        return this.taskRepository.findTaskByUserId(id)
+                .orElseThrow();
+    }
 }
 

@@ -16,4 +16,5 @@ public interface TaskService {
 
     Task deleteTaskById(Long id);
 
+    List<Task> findTaskByUserId(Long id);
 }

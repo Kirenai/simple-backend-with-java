@@ -9,6 +9,7 @@ import une.revilla.backend.entity.Task;
 import une.revilla.backend.entity.User;
 import une.revilla.backend.enums.RoleEnum;
 import une.revilla.backend.payload.request.RegisterRequest;
+import une.revilla.backend.payload.response.MessageResponse;
 import une.revilla.backend.repository.RoleRepository;
 import une.revilla.backend.repository.TaskRepository;
 import une.revilla.backend.repository.UserRepository;
@@ -92,13 +93,43 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public User updateUser(Long id, User userData) {
+    public MessageResponse updateUser(Long id, Long idRole, User userData) {
+        String message;
+
+        User userWithAuth = this.findUserById(idRole);
         User userToUpdate = this.findUserById(id);
+
         userToUpdate.setUsername(userData.getUsername());
         userToUpdate.setPassword(passwordEncoder.encode(userData.getPassword()));
         userToUpdate.setEmail(userData.getEmail());
         userToUpdate.setFullName(userData.getFullName());
-        return this.userRepository.save(userToUpdate);
+
+        Set<Role> roles = new HashSet<>(userWithAuth.getRoles());
+        boolean match = roles.stream().anyMatch(role -> (role.getName().equals("ROLE_ADMIN")));
+        if (match) {    //true, if have ROLE_ADMIN
+            Set<Role> newRoles = new HashSet<>();
+            userData.getRoles().forEach(role -> {
+                if (role.getName().equals("admin")) {
+                    Role roleAdmin = this.roleRepository.findByName(RoleEnum.ADMIN.getRole())
+                            .orElseThrow();
+                    newRoles.add(roleAdmin);
+                } else if (role.getName().equals("mod")) {
+                    Role roleModerator = this.roleRepository.findByName(RoleEnum.MODERATOR.getRole())
+                            .orElseThrow();
+                    newRoles.add(roleModerator);
+                } else {
+                    Role roleUser = this.roleRepository.findByName(RoleEnum.USER.getRole())
+                            .orElseThrow();
+                    newRoles.add(roleUser);
+                }
+            });
+            userToUpdate.setRoles(newRoles);
+            message = "User updated by ADMIN";
+        } else message = "User updated";
+
+        this.userRepository.save(userToUpdate);
+
+        return new MessageResponse(message);
     }
 
     @Override

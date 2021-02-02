@@ -12,20 +12,20 @@ import java.util.Set;
 @NoArgsConstructor
 public class RegisterRequest {
 
-    @NotBlank
+    @NotBlank(message = "Please provide username")
     @Size(min = 5, max = 30)
     private String username;
 
-    @NotBlank
+    @NotBlank(message = "Please provide password")
     @Size(min = 8, max = 40)
     private String password;
 
-    @NotBlank
+    @NotBlank(message = "Please provide email")
     @Size(max = 35)
-    @Email
+    @Email(message = "Please insert a good email")
     private String email;
 
-    @NotBlank
+    @NotBlank(message = "Please provide full name")
     @Size(min = 10, max = 40)
     private String fullName;
 

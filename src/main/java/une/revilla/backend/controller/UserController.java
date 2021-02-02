@@ -4,17 +4,20 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import une.revilla.backend.entity.Task;
 import une.revilla.backend.entity.User;
 import une.revilla.backend.payload.request.RegisterRequest;
+import une.revilla.backend.payload.response.MessageResponse;
 import une.revilla.backend.service.TaskService;
 import une.revilla.backend.service.UserService;
 
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/user")
 public class UserController {
 
@@ -65,11 +68,13 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/update/{idRole}/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User userData) {
-        User user = this.userService.updateUser(id, userData);
-        return new ResponseEntity<>(user, HttpStatus.OK);
+    public ResponseEntity<MessageResponse> updateUser(@PathVariable Long id,
+                                                      @PathVariable Long idRole,
+                                                      @RequestBody User userData) {
+        MessageResponse message = this.userService.updateUser(id, idRole, userData);
+        return ResponseEntity.ok(message);
     }
 
     @DeleteMapping("/delete/{id}")

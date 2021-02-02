@@ -12,6 +12,7 @@ import une.revilla.backend.service.TaskService;
 import java.util.List;
 
 @RestController
+@CrossOrigin
 @RequestMapping("/api/task")
 public class TaskController {
 
@@ -23,7 +24,7 @@ public class TaskController {
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     public ResponseEntity<List<Task>> getAllTasks() {
         List<Task> allTasks = this.taskService.findAllTasks();
         return new ResponseEntity<>(allTasks, HttpStatus.OK);
@@ -54,6 +55,13 @@ public class TaskController {
     public ResponseEntity<Task> deleteTask(@PathVariable Long id) {
         Task taskDeleted = this.taskService.deleteTaskById(id);
         return new ResponseEntity<>(taskDeleted, HttpStatus.OK);
+    }
+
+    @GetMapping(path = "/user/{id}")
+    @PreAuthorize(value = "hasRole('ROLE_USER')")
+    public ResponseEntity<List<Task>> findTasksByUserId(@PathVariable Long id) {
+        List<Task> taskByUserId = this.taskService.findTaskByUserId(id);
+        return new ResponseEntity<>(taskByUserId, HttpStatus.OK);
     }
 }
 
