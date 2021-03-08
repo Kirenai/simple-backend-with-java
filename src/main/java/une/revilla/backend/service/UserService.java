@@ -1,29 +1,34 @@
 package une.revilla.backend.service;
 
+import une.revilla.backend.dto.UserDto;
 import une.revilla.backend.entity.Task;
 import une.revilla.backend.entity.User;
 import une.revilla.backend.payload.request.RegisterRequest;
+import une.revilla.backend.payload.request.TaskRequest;
+import une.revilla.backend.payload.request.UserRequest;
 import une.revilla.backend.payload.response.MessageResponse;
 
 import java.util.List;
 
 public interface UserService {
 
-    List<User> findAllUsers();
+    List<UserDto> findAllUsers();
 
-    User findUserById(Long id);
+    UserDto findUserById(Long id);
 
-    User findByUsername(String username);
+    UserDto findByUsername(String username);
 
     User saveUser(RegisterRequest registerRequest);
 
-    MessageResponse updateUser(Long id, Long idRole, User userData);
+    UserDto updateUser(Long id, UserRequest userRequest);
 
-    User deleteUserById(Long id);
+    UserDto updateUserByAdmin(Long userId, UserRequest userData);
 
-    User addTaskUser(Long id, Task task);
+    MessageResponse deleteUserById(Long id);
+
+    MessageResponse addTaskUser(Long id, Task task);
 
     Boolean existsByEmail(String email);
 
-    User updateTaskUser(Long userId, Task taskToUpdate);
+    User updateTaskUser(Long userId, TaskRequest taskToUpdate);
 }

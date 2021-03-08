@@ -1,10 +1,7 @@
 package une.revilla.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -15,13 +12,15 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
-@Data
+//@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = {"id", "title", "author",
-        "description", "createAt", "updateAt",
+@ToString(exclude = {
         "user"})
-@XmlAccessorType(XmlAccessType.FIELD)
+//@XmlAccessorType(XmlAccessType.FIELD)
 public class Task {
 
     @Id
@@ -29,10 +28,10 @@ public class Task {
     @Column(name = "task_id")
     private Long id;
 
-    @Column(name = "title")
+    @Column(name = "title", length = 30)
     private String title;
 
-    @Column(name = "author")
+    @Column(name = "author", length = 25)
     private String author;
 
     @Column(name = "description")

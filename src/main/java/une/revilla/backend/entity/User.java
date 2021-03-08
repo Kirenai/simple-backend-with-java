@@ -1,6 +1,7 @@
 package une.revilla.backend.entity;
 
 import lombok.*;
+import lombok.experimental.Accessors;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -16,15 +17,18 @@ import java.util.Collection;
 import java.util.HashSet;
 
 @Entity
-@Table(name = "users")
-@Data
+@Table(name = "users",
+        indexes = @Index(
+                name = "idx_user_email",
+                columnList = "email",
+                unique = true
+        )
+)
+@Getter
+@Setter
+@EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = {"id", "username",
-        "password", "email", "fullName",
-        "createdAt", "updatedAt", "tasks",
-        "roles"})
-@XmlAccessorType(XmlAccessType.FIELD)
 public class User {
 
     @Id
@@ -61,10 +65,10 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Collection<Task> tasks = new ArrayList<>();
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "users_roles",
             joinColumns = @JoinColumn(name = "user_id"),

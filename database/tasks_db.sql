@@ -65,7 +65,7 @@ DESCRIBE tasks;
 
 SELECT * FROM tasks;
 
-INSERT INTO tasks (title, author, description)
+INSERT INTO `tasks` (`title`, `author`, `description`)
     VALUE ('MUSICS', 'LUCAS', 'JAPAN MUSIC OF MERRY CHRISTMAS');
 
 UPDATE tasks
@@ -77,8 +77,8 @@ DELETE FROM tasks; #test
 ALTER TABLE tasks AUTO_INCREMENT = 0;
 ALTER TABLE roles AUTO_INCREMENT = 0;
 
-INSERT INTO roles (`name`)
-    VALUES ("ROLE_USER");
+INSERT INTO `roles` (`name`)
+    VALUES (`ROLE_USER`);
 
 INSERT INTO roles (`name`)
     VALUES ("ROLE_MODERATOR");

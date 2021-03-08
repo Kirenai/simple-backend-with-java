@@ -1,6 +1,7 @@
 package une.revilla.backend.controller;
 
 import io.jsonwebtoken.Jwts;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import une.revilla.backend.config.JwtConfig;
+import une.revilla.backend.dto.UserDto;
 import une.revilla.backend.entity.User;
 import une.revilla.backend.payload.request.LoginRequest;
 import une.revilla.backend.payload.request.RegisterRequest;
@@ -26,6 +28,7 @@ import java.util.Date;
 
 @RestController
 @CrossOrigin
+@RequiredArgsConstructor
 @RequestMapping("/api/auth")
 public class AuthController {
 
@@ -35,16 +38,6 @@ public class AuthController {
     private final SecretKey secretKey;
     private final JwtConfig jwtConfig;
     private final UserService userService;
-
-    @Autowired
-    public AuthController(AuthenticationManager authenticationManager,
-                          SecretKey secretKey,
-                          JwtConfig jwtConfig, UserService userService) {
-        this.authenticationManager = authenticationManager;
-        this.secretKey = secretKey;
-        this.jwtConfig = jwtConfig;
-        this.userService = userService;
-    }
 
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
@@ -69,7 +62,7 @@ public class AuthController {
                 .signWith(this.secretKey)
                 .compact();
 
-        User user = this.userService.findByUsername(loginRequest.getUsername());
+        UserDto user = this.userService.findByUsername(loginRequest.getUsername());
         return ResponseEntity.ok(new JwtResponse(
                 user.getId(),
                 "Bearer "+token,

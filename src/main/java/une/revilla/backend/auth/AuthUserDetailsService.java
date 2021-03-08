@@ -1,5 +1,6 @@
 package une.revilla.backend.auth;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -12,15 +13,17 @@ import une.revilla.backend.repository.UserRepository;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 @Qualifier("userDetailsService")
 public class AuthUserDetailsService implements UserDetailsService {
 
+    @Qualifier("userRepository")
     private final UserRepository userRepository;
 
-    @Autowired
-    public AuthUserDetailsService(@Qualifier("userRepository") UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
+//    @Autowired
+//    public AuthUserDetailsService(@Qualifier("userRepository") UserRepository userRepository) {
+//        this.userRepository = userRepository;
+//    }
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {

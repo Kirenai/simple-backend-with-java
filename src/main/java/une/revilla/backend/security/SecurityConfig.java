@@ -1,7 +1,9 @@
 package une.revilla.backend.security;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,25 +31,27 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Qualifier("userDetailsService")
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final JwtConfig jwtConfig;
     private final SecretKey secretKey;
     private final AuthEntryPointJwt authEntryPointJwt;
 
-    @Autowired
-    public SecurityConfig(@Qualifier("userDetailsService") UserDetailsService userDetailsService,
-                          PasswordEncoder passwordEncoder,
-                          JwtConfig jwtConfig,
-                          SecretKey secretKey, AuthEntryPointJwt authEntryPointJwt) {
-        this.userDetailsService = userDetailsService;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtConfig = jwtConfig;
-        this.secretKey = secretKey;
-        this.authEntryPointJwt = authEntryPointJwt;
-    }
+//    @Autowired
+//    public SecurityConfig(@Qualifier("userDetailsService") UserDetailsService userDetailsService,
+//                          PasswordEncoder passwordEncoder,
+//                          JwtConfig jwtConfig,
+//                          SecretKey secretKey, AuthEntryPointJwt authEntryPointJwt) {
+//        this.userDetailsService = userDetailsService;
+//        this.passwordEncoder = passwordEncoder;
+//        this.jwtConfig = jwtConfig;
+//        this.secretKey = secretKey;
+//        this.authEntryPointJwt = authEntryPointJwt;
+//    }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {

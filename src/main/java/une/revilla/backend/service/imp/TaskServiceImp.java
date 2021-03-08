@@ -1,25 +1,27 @@
 package une.revilla.backend.service.imp;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import une.revilla.backend.entity.Task;
+import une.revilla.backend.entity.User;
 import une.revilla.backend.exception.task.TaskNoSuchElementException;
+import une.revilla.backend.payload.response.MessageResponse;
 import une.revilla.backend.repository.TaskRepository;
+import une.revilla.backend.repository.UserRepository;
 import une.revilla.backend.service.TaskService;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 @Qualifier("taskService")
 public class TaskServiceImp implements TaskService {
 
+    @Qualifier("taskRepository")
     private final TaskRepository taskRepository;
-
-    @Autowired
-    public TaskServiceImp(@Qualifier("taskRepository") TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
-    }
+    @Qualifier("userRepository")
+    private final UserRepository userRepository;
 
     @Override
     public List<Task> findAllTasks() {
@@ -49,16 +51,33 @@ public class TaskServiceImp implements TaskService {
     }
 
     @Override
-    public Task deleteTaskById(Long id) {
-        Task taskFound = this.findTaskById(id);
+    public Task deleteTaskById(Long idTaskToDelete) {
+        Task taskFound = this.taskRepository.findById(idTaskToDelete)
+                .orElseThrow(() -> new TaskNoSuchElementException("Task not found"));
         this.taskRepository.delete(taskFound);
         return taskFound;
     }
 
     @Override
-    public List<Task> findTaskByUserId(Long id) {
-        return this.taskRepository.findTaskByUserId(id)
-                .orElseThrow();
+    public MessageResponse deleteTaskByUserId(Long userId, Long idTaskToDelete) {
+        String message = "User hasn't that task";
+        User user = this.userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalStateException("User doesn't found"));
+        boolean isTaskPresent = user.getTasks().stream()
+                .anyMatch(task -> task.getId().equals(idTaskToDelete));
+        if (isTaskPresent) {
+            this.taskRepository.deleteById(idTaskToDelete);
+            message = "User has that task: the task has been deleted";
+        }
+        return new MessageResponse(message);
+    }
+
+    @Override
+    public List<Task> findTasksByUserId(Long userId) {
+        return this.taskRepository.findTasksByUserId(userId)
+                .orElseThrow(() -> new TaskNoSuchElementException(
+                        "No tasks found for this User with id: " + userId
+                ));
     }
 }
 
