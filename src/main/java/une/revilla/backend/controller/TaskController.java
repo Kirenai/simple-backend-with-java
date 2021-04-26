@@ -16,51 +16,47 @@ import java.util.List;
 @RestController
 @CrossOrigin
 @RequiredArgsConstructor
-@RequestMapping("/api/task")
+@RequestMapping("/api")
 public class TaskController {
 
+    @Qualifier("taskService")
     private final TaskService taskService;
 
-//    @Autowired
-//    public TaskController(@Qualifier("taskService") TaskService taskService) {
-//        this.taskService = taskService;
-//    }
-
-    @GetMapping
+    @GetMapping(path = "/task")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     public ResponseEntity<List<Task>> getAllTasks() {
         List<Task> allTasks = this.taskService.findAllTasks();
         return new ResponseEntity<>(allTasks, HttpStatus.OK);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/task/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
     public ResponseEntity<Task> getTask(@PathVariable Long id) {
         Task taskFound = this.taskService.findTaskById(id);
         return new ResponseEntity<>(taskFound, HttpStatus.OK);
     }
 
-    @PostMapping("/add")
+    @PostMapping("/task")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
     public ResponseEntity<Task> addTask(@RequestBody Task newTask) {
         return new ResponseEntity<>(this.taskService.saveTask(newTask), HttpStatus.CREATED);
     }
 
-    @PutMapping("/update/{id}")
+    @PutMapping("/task/{id}/edit")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
     public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task taskData) {
         Task taskUpdated = this.taskService.updateTask(id, taskData);
         return new ResponseEntity<>(taskUpdated, HttpStatus.OK);
     }
 
-    @DeleteMapping("/delete/{idTaskToDelete}")
+    @DeleteMapping("/task/{idTaskToDelete}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     public ResponseEntity<Task> deleteTask(@PathVariable Long idTaskToDelete) {
         Task taskDeleted = this.taskService.deleteTaskById(idTaskToDelete);
         return new ResponseEntity<>(taskDeleted, HttpStatus.OK);
     }
 
-    @DeleteMapping(path = "/delete/{userId}/{idTaskToDelete}")
+    @DeleteMapping(path = "/task/{userId}/{idTaskToDelete}")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<MessageResponse> deleteTaskByUserId(@PathVariable Long userId,
                                                 @PathVariable Long idTaskToDelete) {
@@ -68,7 +64,7 @@ public class TaskController {
         return ResponseEntity.ok(messageResponse);
     }
 
-    @GetMapping(path = "/user/{userId}")
+    @GetMapping(path = "/task/user/{userId}")
     @PreAuthorize(value = "hasRole('ROLE_USER')")
     public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable Long userId) {
         List<Task> taskByUserId = this.taskService.findTasksByUserId(userId);

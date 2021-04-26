@@ -9,6 +9,7 @@ import java.util.Collection;
 @Getter
 @Setter
 @EqualsAndHashCode
+@ToString
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
@@ -20,7 +21,7 @@ public class Role {
     @Column(name = "role_id", nullable = false)
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 20, updatable = false)
+    @Column(name = "name", nullable = false, length = 20)
     private String name;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

@@ -1,9 +1,17 @@
 package une.revilla.backend.service.imp;
 
-import lombok.RequiredArgsConstructor;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 import une.revilla.backend.dto.UserDto;
 import une.revilla.backend.dto.mapper.UserMapper;
 import une.revilla.backend.entity.Role;
@@ -20,9 +28,6 @@ import une.revilla.backend.repository.TaskRepository;
 import une.revilla.backend.repository.UserRepository;
 import une.revilla.backend.service.UserService;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 @Service
 @RequiredArgsConstructor
 @Qualifier("userService")
@@ -34,7 +39,9 @@ public class UserServiceImp implements UserService {
     private final TaskRepository taskRepository;
     @Qualifier("roleRepository")
     private final RoleRepository roleRepository;
+    
     private final PasswordEncoder passwordEncoder;
+    private final UserMapper userMapper;
 
     /**
      * Returns a list of all users
@@ -42,19 +49,19 @@ public class UserServiceImp implements UserService {
      */
     @Override
     public List<UserDto> findAllUsers() {
-        return UserMapper.toUserDtoList(this.userRepository.findAll());
+        return this.userMapper.toUserDtoList(this.userRepository.findAll());
     }
 
     @Override
     public UserDto findUserById(Long id) {
-        return UserMapper.toUserDto(this.getUserById(id));
+        return this.userMapper.toUserDto(this.getUserById(id));
     }
 
     @Override
     public UserDto findByUsername(String username) {
         User user = this.userRepository.findByUsername(username)
                 .orElseThrow();
-        return UserMapper.toUserDto(user);
+        return this.userMapper.toUserDto(user);
     }
 
     /**
@@ -109,7 +116,7 @@ public class UserServiceImp implements UserService {
         Set<Role> roleUser = new HashSet<>(Set.of(this.insertRoles("user")));
         userToUpdate.setRoles(roleUser);
 
-        return UserMapper.toUserDto(this.userRepository.save(userToUpdate))
+        return this.userMapper.toUserDto(this.userRepository.save(userToUpdate))
                 .setMessage("User updated successfully");
     }
 
@@ -203,7 +210,7 @@ public class UserServiceImp implements UserService {
             userToUpdate.setRoles(newRoles);
         }
 
-        return UserMapper.toUserDto(this.userRepository.save(userToUpdate))
+        return this.userMapper.toUserDto(this.userRepository.save(userToUpdate))
                 .setMessage("User updated by an Administrator");
     }
 

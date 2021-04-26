@@ -1,12 +1,27 @@
 package une.revilla.backend.controller;
 
-import lombok.RequiredArgsConstructor;
+import java.net.URI;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestController;
+
+import lombok.RequiredArgsConstructor;
 import une.revilla.backend.dto.UserDto;
+import une.revilla.backend.dto.mapper.UserMapper;
 import une.revilla.backend.entity.Task;
 import une.revilla.backend.entity.User;
 import une.revilla.backend.payload.request.RegisterRequest;
@@ -14,8 +29,6 @@ import une.revilla.backend.payload.request.TaskRequest;
 import une.revilla.backend.payload.request.UserRequest;
 import une.revilla.backend.payload.response.MessageResponse;
 import une.revilla.backend.service.UserService;
-
-import java.util.List;
 
 @RestController
 @CrossOrigin
@@ -25,29 +38,39 @@ public class UserController {
 
     @Qualifier("userService")
     private final UserService userService;
+    private final UserMapper userMapper;
 
-    @GetMapping
+    @GetMapping()
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
-    public ResponseEntity<List<?>> findAllUsers() {
+    public ResponseEntity<List<UserDto>> findAllUsers() {
         List<UserDto> allUsers = this.userService.findAllUsers();
         return new ResponseEntity<>(allUsers, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
-    public ResponseEntity<?> findOneUser(@PathVariable Long id) {
+    public ResponseEntity<UserDto> findOneUser(@PathVariable Long id) {
         UserDto userDto = this.userService.findUserById(id);
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
 
-    @PostMapping("/add")
+    @PostMapping()
     @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
-    public ResponseEntity<User> saveUser(@RequestBody RegisterRequest registerRequest) {
-        User userSaved = this.userService.saveUser(registerRequest);
-        return new ResponseEntity<>(userSaved, HttpStatus.CREATED);
+    public ResponseEntity<RegisterRequest> saveUser(@Validated @RequestBody RegisterRequest registerRequest) {
+//        User userSaved = this.userService.saveUser(registerRequest);
+//        UserDto userDto = this.userMapper.toUserDto(userSaved);
+//        return new ResponseEntity<>(userDto, HttpStatus.CREATED);
+        return ResponseEntity.created(URI.create("Created")).body(registerRequest);
     }
 
-    @PostMapping(path = "/add/task/{id}")
+    @PostMapping("/user2")
+    @ResponseStatus(HttpStatus.CREATED)
+    public UserDto saveUserDto(@Validated @RequestBody UserDto userDto) {
+        System.out.println(userDto);
+        return userDto;
+    }
+
+    @PostMapping("/task/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
     public ResponseEntity<MessageResponse> addTaskUser(@PathVariable Long id,
                                                        @RequestBody Task task) {
@@ -55,7 +78,7 @@ public class UserController {
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
 
-    @PutMapping(path = "/update/task/{id}")
+    @PutMapping("/task/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
     public ResponseEntity<User> updateTaskUser(@PathVariable("id") Long userId,
                                                @RequestBody TaskRequest taskToUpdate) {
@@ -63,7 +86,7 @@ public class UserController {
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PutMapping(path = "/update/{id}")
+    @PutMapping("/{id}/edit")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<UserDto> updateUser(@PathVariable Long id,
                                               @RequestBody UserRequest userRequest) {
@@ -71,7 +94,7 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
-    @PutMapping("/admin/update/{userId}")
+    @PutMapping("/admin/user/{userId}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<UserDto> updateUserByAdmin(@PathVariable Long userId,
                                                       @RequestBody UserRequest userRequest) {
@@ -79,7 +102,7 @@ public class UserController {
         return ResponseEntity.ok(userDto);
     }
 
-    @DeleteMapping("/delete/{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
     public ResponseEntity<MessageResponse> deleteUser(@PathVariable Long id) {
         MessageResponse message = this.userService.deleteUserById(id);

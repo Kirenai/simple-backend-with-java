@@ -4,7 +4,6 @@ import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -14,7 +13,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import une.revilla.backend.config.JwtConfig;
 import une.revilla.backend.dto.UserDto;
-import une.revilla.backend.entity.User;
 import une.revilla.backend.payload.request.LoginRequest;
 import une.revilla.backend.payload.request.RegisterRequest;
 import une.revilla.backend.payload.response.JwtResponse;
@@ -29,7 +27,7 @@ import java.util.Date;
 @RestController
 @CrossOrigin
 @RequiredArgsConstructor
-@RequestMapping("/api/auth")
+@RequestMapping("/api")
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -39,7 +37,7 @@ public class AuthController {
     private final JwtConfig jwtConfig;
     private final UserService userService;
 
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authenticate;
         try {
@@ -73,7 +71,7 @@ public class AuthController {
         );
     }
 
-    @PostMapping("/register")
+    @PostMapping("/auth/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
         if (this.userService.existsByEmail(registerRequest.getEmail())) {
             return ResponseEntity.badRequest()

@@ -1,16 +1,16 @@
 package une.revilla.backend.auth;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import lombok.RequiredArgsConstructor;
 import une.revilla.backend.entity.User;
 import une.revilla.backend.repository.UserRepository;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
