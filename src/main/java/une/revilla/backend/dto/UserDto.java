@@ -36,7 +36,7 @@ public class UserDto {
     @Size(min = 5, max = 40)
     private String fullName;
 
-    @NotEmpty(message = "Please provide roles")
+    // @NotEmpty(message = "Please provide roles")
     private Collection<RoleDto> roles;
     private String message;
 

@@ -10,8 +10,10 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import lombok.RequiredArgsConstructor;
+import une.revilla.backend.dto.RoleDto;
 import une.revilla.backend.dto.UserDto;
 import une.revilla.backend.dto.mapper.UserMapper;
 import une.revilla.backend.entity.Role;
@@ -19,7 +21,6 @@ import une.revilla.backend.entity.Task;
 import une.revilla.backend.entity.User;
 import une.revilla.backend.enums.RoleEnum;
 import une.revilla.backend.exception.user.UserNoSuchElementException;
-import une.revilla.backend.payload.request.RegisterRequest;
 import une.revilla.backend.payload.request.TaskRequest;
 import une.revilla.backend.payload.request.UserRequest;
 import une.revilla.backend.payload.response.MessageResponse;
@@ -68,26 +69,30 @@ public class UserServiceImp implements UserService {
      * User registration by administrator
      * This method is called only when the administrator needs add new user
      *
-     * @param registerRequest The data of the new user
-     * @return The user saved
+     * @param UserDto The Data Transfer Object of the new User persistence 
+     * @return returns a UserDTO object with the user's data
      */
+    @Transactional
     @Override
-    public User saveUser(RegisterRequest registerRequest) {
+    public UserDto saveUser(UserDto userDto) {
         User user = new User();
 
-        user.setUsername(registerRequest.getUsername());
-        user.setPassword(passwordEncoder.encode(registerRequest.getPassword()));
-        user.setEmail(registerRequest.getEmail());
-        user.setFullName(registerRequest.getFullName());
+        user.setUsername(userDto.getUsername());
+        user.setPassword(this.passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail(userDto.getEmail());
+        user.setFullName(userDto.getFullName());
 
-        Set<String> rolesRequest = registerRequest.getRoles();
+        Set<String> rolesDto = userDto.getRoles()
+                .stream()
+                .map(RoleDto::getName)
+                .collect(Collectors.toSet());
         Set<Role> roles = new HashSet<>();
 
-        if (rolesRequest == null) {
+        if (rolesDto.size() == 0) {
             Role roleUser = this.roleRepository.findByName(RoleEnum.USER.getRole()).orElseThrow();
             roles.add(roleUser);
         } else {
-            rolesRequest.forEach(role -> {
+            rolesDto.forEach(role -> {
                 if (role.equals("admin")) {
                     Role roleAdmin = this.roleRepository.findByName(RoleEnum.ADMIN.getRole())
                             .orElseThrow();
@@ -106,18 +111,30 @@ public class UserServiceImp implements UserService {
 
         user.setRoles(roles);
         User userSaved = this.userRepository.save(user);
-        return this.userRepository.findById(userSaved.getId()).orElseThrow();
+        return this.userMapper.toUserDto(userSaved);
     }
 
+    /**
+     * Updated User
+     * 
+     * @param id User id in persistence
+     * @param userDto The Data Transfer Object update the user 
+     * @return retorna
+     */
+    @Transactional
     @Override
-    public UserDto updateUser(Long id, UserRequest userRequest) {
-        User userToUpdate = this.transformToUser(id, userRequest);
+    public UserDto updateUser(Long id, UserDto userDto) {
+        UserDto userFound = this.findUserById(id);
+        userFound.setUsername(userDto.getUsername());
+        userFound.setPassword(this.passwordEncoder.encode(userDto.getPassword()));
+        userFound.setEmail(userDto.getEmail());
+        userFound.setFullName(userDto.getFullName());
 
-        Set<Role> roleUser = new HashSet<>(Set.of(this.insertRoles("user")));
-        userToUpdate.setRoles(roleUser);
+        User userToUpdate = this.userMapper.toUser(userFound);
+        userToUpdate.setRoles(Set.of(this.insertRoles("user")));
 
         return this.userMapper.toUserDto(this.userRepository.save(userToUpdate))
-                .setMessage("User updated successfully");
+                .setMessage("The user has been updated successfully!");
     }
 
     /**
@@ -153,9 +170,11 @@ public class UserServiceImp implements UserService {
     }
 
     @Override
-    public MessageResponse deleteUserById(Long id) {
+    public UserDto deleteUserById(Long id) {
         this.userRepository.delete(this.getUserById(id));
-        return new MessageResponse("User deleted successfully");
+        UserDto userDto = new UserDto()
+                .setMessage("The user has been successfully removed!");
+        return userDto;
     }
 
     @Override

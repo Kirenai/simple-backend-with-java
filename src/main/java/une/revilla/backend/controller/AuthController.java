@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
 import une.revilla.backend.config.JwtConfig;
 import une.revilla.backend.dto.UserDto;
 import une.revilla.backend.payload.request.LoginRequest;
-import une.revilla.backend.payload.request.RegisterRequest;
 import une.revilla.backend.payload.response.JwtResponse;
 import une.revilla.backend.payload.response.MessageResponse;
 import une.revilla.backend.service.UserService;
@@ -72,12 +71,12 @@ public class AuthController {
     }
 
     @PostMapping("/auth/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-        if (this.userService.existsByEmail(registerRequest.getEmail())) {
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserDto userDto) {
+        if (this.userService.existsByEmail(userDto.getEmail())) {
             return ResponseEntity.badRequest()
                     .body(new MessageResponse("E/R: Email is already exists!"));
         }
-        this.userService.saveUser(registerRequest);
+        this.userService.saveUser(userDto);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 }
