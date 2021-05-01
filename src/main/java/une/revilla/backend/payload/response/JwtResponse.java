@@ -2,7 +2,6 @@ package une.revilla.backend.payload.response;
 
 import lombok.*;
 import une.revilla.backend.dto.RoleDto;
-import une.revilla.backend.entity.Role;
 
 import java.util.Collection;
 

@@ -3,7 +3,6 @@ package une.revilla.backend.exception.auth;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.validation.BindingResult;
 
 import java.time.LocalDateTime;
 

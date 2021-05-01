@@ -20,8 +20,8 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.RequiredArgsConstructor;
+import une.revilla.backend.dto.DataDto;
 import une.revilla.backend.dto.UserDto;
-import une.revilla.backend.dto.mapper.UserMapper;
 import une.revilla.backend.entity.Task;
 import une.revilla.backend.entity.User;
 import une.revilla.backend.payload.request.RegisterRequest;
@@ -38,24 +38,25 @@ public class UserController {
 
     @Qualifier("userService")
     private final UserService userService;
-    private final UserMapper userMapper;
 
     @GetMapping()
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
-    public ResponseEntity<List<UserDto>> findAllUsers() {
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
+    public ResponseEntity<DataDto>indAllUsers() {
         List<UserDto> allUsers = this.userService.findAllUsers();
-        return new ResponseEntity<>(allUsers, HttpStatus.OK);
+        DataDto data = new DataDto(null, allUsers);
+        return new ResponseEntity<>(data, HttpStatus.OK);
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
-    public ResponseEntity<UserDto> findOneUser(@PathVariable Long id) {
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
+    public ResponseEntity<DataDto> findOneUser(@PathVariable Long id) {
         UserDto userDto = this.userService.findUserById(id);
-        return new ResponseEntity<>(userDto, HttpStatus.OK);
+        DataDto personData = new DataDto(userDto, null);
+        return new ResponseEntity<>(personData, HttpStatus.OK);
     }
 
     @PostMapping()
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN')")
+    @PreAuthorize("hasAnyRole('ADMIN')")
     public ResponseEntity<RegisterRequest> saveUser(@Validated @RequestBody RegisterRequest registerRequest) {
 //        User userSaved = this.userService.saveUser(registerRequest);
 //        UserDto userDto = this.userMapper.toUserDto(userSaved);
@@ -71,7 +72,7 @@ public class UserController {
     }
 
     @PostMapping("/task/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR', 'USER')")
     public ResponseEntity<MessageResponse> addTaskUser(@PathVariable Long id,
                                                        @RequestBody Task task) {
         MessageResponse message = this.userService.addTaskUser(id, task);
@@ -79,7 +80,7 @@ public class UserController {
     }
 
     @PutMapping("/task/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR', 'USER')")
     public ResponseEntity<User> updateTaskUser(@PathVariable("id") Long userId,
                                                @RequestBody TaskRequest taskToUpdate) {
         User user = this.userService.updateTaskUser(userId, taskToUpdate);
@@ -87,7 +88,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}/edit")
-    @PreAuthorize("hasRole('ROLE_USER')")
+    @PreAuthorize("hasRole('USER')")
     public ResponseEntity<UserDto> updateUser(@PathVariable Long id,
                                               @RequestBody UserRequest userRequest) {
         UserDto userDto = this.userService.updateUser(id, userRequest);
@@ -95,7 +96,7 @@ public class UserController {
     }
 
     @PutMapping("/admin/user/{userId}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> updateUserByAdmin(@PathVariable Long userId,
                                                       @RequestBody UserRequest userRequest) {
         UserDto userDto = this.userService.updateUserByAdmin(userId, userRequest);
@@ -103,7 +104,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<MessageResponse> deleteUser(@PathVariable Long id) {
         MessageResponse message = this.userService.deleteUserById(id);
         return ResponseEntity.ok(message);

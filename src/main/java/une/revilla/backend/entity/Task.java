@@ -6,13 +6,10 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
-//@Data
 @Getter
 @Setter
 @EqualsAndHashCode
@@ -20,7 +17,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @ToString(exclude = {
         "user"})
-//@XmlAccessorType(XmlAccessType.FIELD)
 public class Task {
 
     @Id

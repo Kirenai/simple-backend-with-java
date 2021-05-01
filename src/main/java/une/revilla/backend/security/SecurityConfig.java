@@ -1,9 +1,10 @@
 package une.revilla.backend.security;
 
-import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Arrays;
+
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -20,13 +21,12 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import lombok.RequiredArgsConstructor;
 import une.revilla.backend.config.JwtConfig;
 import une.revilla.backend.jwt.AuthEntryPointJwt;
 import une.revilla.backend.jwt.JwtTokenVerifier;
 import une.revilla.backend.jwt.JwtUsernameAndPasswordAuthenticationFilter;
-
-import javax.crypto.SecretKey;
-import java.util.Arrays;
 
 @Configuration
 @EnableWebSecurity
