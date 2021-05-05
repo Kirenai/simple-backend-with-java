@@ -1,23 +1,23 @@
 package une.revilla.backend.service;
 
-import une.revilla.backend.entity.Task;
-import une.revilla.backend.payload.response.MessageResponse;
+import une.revilla.backend.dto.TaskDto;
 
 import java.util.List;
 
 public interface TaskService {
 
-    List<Task> findAllTasks();
+    List<TaskDto> findAllTasks();
 
-    Task findTaskById(Long id);
+    TaskDto findTaskById(Long id);
 
-    Task saveTask(Task newTask);
+    List<TaskDto> findTasksByUserId(Long userId);
 
-    Task updateTask(Long id, Task taskData);
+    TaskDto saveTask(TaskDto newTask, Long userId);
 
-    Task deleteTaskById(Long idTaskToDelete);
+    TaskDto updateTask(Long id, TaskDto taskData);
 
-    MessageResponse deleteTaskByUserId(Long userId, Long idTaskToDelete);
+    TaskDto deleteTaskById(Long taskId);
 
-    List<Task> findTasksByUserId(Long userId);
+    TaskDto deleteTaskByUserId(Long userId, Long taskId);
+
 }

@@ -1,74 +1,93 @@
 package une.revilla.backend.controller;
 
 import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import une.revilla.backend.entity.Task;
-import une.revilla.backend.payload.response.MessageResponse;
+import une.revilla.backend.dto.DataTaskDto;
+import une.revilla.backend.dto.TaskDto;
 import une.revilla.backend.service.TaskService;
 
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
 @CrossOrigin
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/task")
 public class TaskController {
 
     @Qualifier("taskService")
     private final TaskService taskService;
 
-    @GetMapping(path = "/task")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
-    public ResponseEntity<List<Task>> getAllTasks() {
-        List<Task> allTasks = this.taskService.findAllTasks();
-        return new ResponseEntity<>(allTasks, HttpStatus.OK);
+    @GetMapping()
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
+    public ResponseEntity<DataTaskDto> getTasks() {
+        List<TaskDto> allTasks = this.taskService.findAllTasks();
+        DataTaskDto data = new DataTaskDto(null, allTasks);
+        return ResponseEntity.status(HttpStatus.OK).body(data);
     }
 
-    @GetMapping("/task/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
-    public ResponseEntity<Task> getTask(@PathVariable Long id) {
-        Task taskFound = this.taskService.findTaskById(id);
-        return new ResponseEntity<>(taskFound, HttpStatus.OK);
+    @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR', 'USER')")
+    public ResponseEntity<DataTaskDto> getTask(@PathVariable Long id) {
+        TaskDto taskDto = this.taskService.findTaskById(id);
+        DataTaskDto taskData = new DataTaskDto(taskDto, null);
+        return ResponseEntity.status(HttpStatus.OK).body(taskData);
     }
 
-    @PostMapping("/task")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
-    public ResponseEntity<Task> addTask(@RequestBody Task newTask) {
-        return new ResponseEntity<>(this.taskService.saveTask(newTask), HttpStatus.CREATED);
+    @GetMapping(path = "/user/{userId}")
+    @PreAuthorize(value = "hasRole('USER')")
+    public ResponseEntity<DataTaskDto> getUserTasksById(@PathVariable Long userId) {
+        List<TaskDto> userAllTasks = this.taskService.findTasksByUserId(userId);
+        DataTaskDto userTaskData = new DataTaskDto(null, userAllTasks);
+        return ResponseEntity.status(HttpStatus.OK).body(userTaskData);
     }
 
-    @PutMapping("/task/{id}/edit")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR', 'ROLE_USER')")
-    public ResponseEntity<Task> updateTask(@PathVariable Long id, @RequestBody Task taskData) {
-        Task taskUpdated = this.taskService.updateTask(id, taskData);
-        return new ResponseEntity<>(taskUpdated, HttpStatus.OK);
+    /**
+     * Save a Task for an existing User
+     * @param userId The User Id
+     * @param newTask The task to add to the User
+     * @return A DataTaskDto with all the information
+     */
+    @PostMapping("/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR', 'USER')")
+    public ResponseEntity<DataTaskDto> saveTaskToUsers(@PathVariable Long userId,
+                                                       @Valid @RequestBody TaskDto newTask) {
+        TaskDto tasKSaved = this.taskService.saveTask(newTask, userId);
+        DataTaskDto taskData = new DataTaskDto(tasKSaved, null);
+        return ResponseEntity.status(HttpStatus.CREATED).body(taskData);
     }
 
-    @DeleteMapping("/task/{idTaskToDelete}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_MODERATOR')")
-    public ResponseEntity<Task> deleteTask(@PathVariable Long idTaskToDelete) {
-        Task taskDeleted = this.taskService.deleteTaskById(idTaskToDelete);
-        return new ResponseEntity<>(taskDeleted, HttpStatus.OK);
+    @PutMapping("/{userId}/edit")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR', 'USER')")
+    public ResponseEntity<DataTaskDto> updateTask(@PathVariable Long userId,
+                                                  @Valid @RequestBody TaskDto taskDto) {
+        TaskDto taskUpdated = this.taskService.updateTask(userId, taskDto);
+        DataTaskDto taskData = new DataTaskDto(taskUpdated, null);
+        return ResponseEntity.status(HttpStatus.OK).body(taskData);
     }
 
-    @DeleteMapping(path = "/task/{userId}/{idTaskToDelete}")
-    @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<MessageResponse> deleteTaskByUserId(@PathVariable Long userId,
-                                                @PathVariable Long idTaskToDelete) {
-        MessageResponse messageResponse = this.taskService.deleteTaskByUserId(userId, idTaskToDelete);
-        return ResponseEntity.ok(messageResponse);
+    @DeleteMapping("/{taskId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
+    public ResponseEntity<DataTaskDto> deleteTask(@PathVariable Long taskId) {
+        TaskDto taskDto = this.taskService.deleteTaskById(taskId);
+        DataTaskDto taskData = new DataTaskDto(taskDto, null);
+        return ResponseEntity.status(HttpStatus.OK).body(taskData);
     }
 
-    @GetMapping(path = "/task/user/{userId}")
-    @PreAuthorize(value = "hasRole('ROLE_USER')")
-    public ResponseEntity<List<Task>> getTasksByUserId(@PathVariable Long userId) {
-        List<Task> taskByUserId = this.taskService.findTasksByUserId(userId);
-        return new ResponseEntity<>(taskByUserId, HttpStatus.OK);
+    @DeleteMapping("/{userId}/{taskId}")
+    @PreAuthorize("hasRole('USER')")
+    public ResponseEntity<DataTaskDto> deleteTaskByUserId(@PathVariable Long userId,
+                                                          @PathVariable Long taskId) {
+        TaskDto taskDto = this.taskService.deleteTaskByUserId(userId, taskId);
+        DataTaskDto taskData = new DataTaskDto(taskDto, null);
+        return ResponseEntity.status(HttpStatus.OK).body(taskData);
     }
+
 }
 
 

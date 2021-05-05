@@ -10,7 +10,7 @@ import lombok.*;
 @Data
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DataDto {
+public class DataUserDto {
 
     private final UserDto personData;
 

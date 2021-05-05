@@ -1,11 +1,21 @@
 package une.revilla.backend.dto;
 
-import com.fasterxml.jackson.annotation.*;
-import lombok.*;
-import lombok.experimental.Accessors;
-
-import javax.validation.constraints.*;
+import java.time.LocalDateTime;
 import java.util.Collection;
+
+import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.Size;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 
 @Getter
 @Setter
@@ -36,8 +46,13 @@ public class UserDto {
     @Size(min = 5, max = 40)
     private String fullName;
 
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+
+    private Collection<TaskDto> tasks;
     // @NotEmpty(message = "Please provide roles")
     private Collection<RoleDto> roles;
     private String message;
+    
 
 }
