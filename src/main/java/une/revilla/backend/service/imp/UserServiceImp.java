@@ -121,7 +121,6 @@ public class UserServiceImp implements UserService {
      * @param userDto The Data Transfer Object update the user 
      * @return retorna
      */
-    @Transactional
     @Override
     public UserDto updateUser(Long id, UserDto userDto) {
         UserDto userFound = this.findUserById(id);
@@ -131,9 +130,10 @@ public class UserServiceImp implements UserService {
         userFound.setFullName(userDto.getFullName());
 
         User userToUpdate = this.userMapper.toUser(userFound);
-        userToUpdate.setRoles(Set.of(this.insertRoles("user")));
 
-        return this.userMapper.toUserDto(this.userRepository.save(userToUpdate))
+        User save = this.userRepository.save(userToUpdate);
+        System.out.println(save);
+        return this.userMapper.toUserDto(save)
                 .setMessage("The user has been updated successfully!");
     }
 

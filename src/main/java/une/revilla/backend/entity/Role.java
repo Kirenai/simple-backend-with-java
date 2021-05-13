@@ -9,7 +9,7 @@ import java.util.Collection;
 @Getter
 @Setter
 @EqualsAndHashCode
-@ToString
+@ToString(exclude = {"users"})
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity

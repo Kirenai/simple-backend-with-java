@@ -47,7 +47,7 @@ public class AuthController {
             );
         } catch (BadCredentialsException ex) {
             logger.info("Invalid credentials by user {}", loginRequest);
-            throw new BadCredentialsException("Wrong user, try again");
+            throw new BadCredentialsException("Wrong user, try again " + ex.getLocalizedMessage());
         }
 
         SecurityContextHolder.getContext().setAuthentication(authenticate);

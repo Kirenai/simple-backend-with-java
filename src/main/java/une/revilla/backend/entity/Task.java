@@ -15,8 +15,7 @@ import java.time.LocalDateTime;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = {
-        "user"})
+@ToString(exclude = {"user"})
 public class Task {
 
     @Id

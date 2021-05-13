@@ -2,11 +2,12 @@ package une.revilla.backend.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,25 +39,25 @@ public class UserController {
 
     @GetMapping()
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
-    public ResponseEntity<DataUserDto> findAllUsers() {
+    public ResponseEntity<DataUserDto> getUsers() {
         List<UserDto> allUsers = this.userService.findAllUsers();
-        DataUserDto data = new DataUserDto(null, allUsers);
+        DataUserDto data = DataUserDto.getInstance(allUsers);
         return ResponseEntity.status(HttpStatus.OK).body(data);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
-    public ResponseEntity<DataUserDto> findOneUser(@PathVariable Long id) {
+    public ResponseEntity<DataUserDto> getUser(@PathVariable Long id) {
         UserDto userDto = this.userService.findUserById(id);
-        DataUserDto personData = new DataUserDto(userDto, null);
+        DataUserDto personData = DataUserDto.getInstance(userDto);
         return ResponseEntity.status(HttpStatus.OK).body(personData);
     }
 
     @PostMapping()
     @PreAuthorize("hasAnyRole('ADMIN')")
-    public ResponseEntity<DataUserDto> saveUser(@Validated @RequestBody UserDto userDto) {
+    public ResponseEntity<DataUserDto> create(@Valid @RequestBody UserDto userDto) {
         UserDto userSaved = this.userService.saveUser(userDto);
-        DataUserDto personData = new DataUserDto(userSaved, null);
+        DataUserDto personData = DataUserDto.getInstance(userSaved);
         return new ResponseEntity<>(personData, HttpStatus.CREATED);
     }
 
@@ -80,15 +81,15 @@ public class UserController {
 
     @PutMapping("/{id}/edit")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<DataUserDto> updateUser(@PathVariable Long id,
-                                              @Validated @RequestBody UserDto userDto) {
+    public ResponseEntity<DataUserDto> update(@PathVariable Long id,
+                                              @Valid @RequestBody UserDto userDto) {
         UserDto userSaved = this.userService.updateUser(id, userDto);
-        DataUserDto personData = new DataUserDto(userSaved, null);
+        DataUserDto personData = DataUserDto.getInstance(userSaved);
         return ResponseEntity.status(HttpStatus.OK).body(personData);
     }
 
     // TODO: update later with DTO
-    @PutMapping("/admin/user/{userId}")
+    @PutMapping("/admin/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserDto> updateUserByAdmin(@PathVariable Long userId,
                                                       @RequestBody UserRequest userRequest) {
@@ -98,9 +99,9 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
-    public ResponseEntity<DataUserDto> deleteUser(@PathVariable Long id) {
+    public ResponseEntity<DataUserDto> delete(@PathVariable Long id) {
         UserDto userRemoved = this.userService.deleteUserById(id);
-        DataUserDto personData = new DataUserDto(userRemoved, null);
+        DataUserDto personData = DataUserDto.getInstance(userRemoved);
         return ResponseEntity.status(HttpStatus.OK).body(personData);
     }
 
