@@ -25,20 +25,24 @@ public class DataTaskDto {
 
     private List<TaskDto> data;
 
-    private static DataTaskDto instance = null;
+    private static DataTaskDto dataTaskDto = null;
 
     public static DataTaskDto getInstance(TaskDto taskDto) {
-        if (instance != null) {
-            return instance;
+        if (dataTaskDto == null) {
+            dataTaskDto = new DataTaskDto(taskDto, null);
         }
-        return new DataTaskDto(taskDto, null);
+        dataTaskDto.setTaskData(taskDto);
+        dataTaskDto.setData(null);
+        return dataTaskDto; 
     }
 
     public static DataTaskDto getInstance(List<TaskDto> data) {
-        if (instance != null) {
-            return instance;
+        if (dataTaskDto == null) {
+            dataTaskDto = new DataTaskDto(null, data);
         }
-        return new DataTaskDto(null, data);
+        dataTaskDto.setData(data);
+        dataTaskDto.setTaskData(null);
+        return dataTaskDto;
     }
 
 }

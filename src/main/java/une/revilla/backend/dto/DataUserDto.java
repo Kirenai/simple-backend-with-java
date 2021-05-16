@@ -16,24 +16,28 @@ import lombok.*;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DataUserDto {
 
-    private final UserDto personData;
+    private UserDto personData;
 
-    private final List<UserDto> data;
+    private List<UserDto> data;
 
-    private static DataUserDto instance = null;
+    private static DataUserDto dataUserDto = null;
 
     public static DataUserDto getInstance(UserDto personData) {
-        if (instance != null) {
-            return instance;
+        if (dataUserDto == null) {
+            dataUserDto = new DataUserDto(personData, null);
         }
-        return new DataUserDto(personData, null);
+        dataUserDto.setPersonData(personData);
+        dataUserDto.setData(null);
+        return dataUserDto; 
     }
 
     public static DataUserDto getInstance(List<UserDto> data) {
-        if (instance != null) {
-            return instance;
+        if (dataUserDto == null) {
+            dataUserDto = new DataUserDto(null, data);
         }
-        return new DataUserDto(null, data);
+        dataUserDto.setData(data);
+        dataUserDto.setPersonData(null);
+        return dataUserDto; 
     }
     
 }
