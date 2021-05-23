@@ -28,7 +28,7 @@ public class DataUserDto {
         }
         dataUserDto.setPersonData(personData);
         dataUserDto.setData(null);
-        return dataUserDto; 
+        return dataUserDto;
     }
 
     public static DataUserDto getInstance(List<UserDto> data) {
@@ -37,7 +37,7 @@ public class DataUserDto {
         }
         dataUserDto.setData(data);
         dataUserDto.setPersonData(null);
-        return dataUserDto; 
+        return dataUserDto;
     }
-    
+
 }

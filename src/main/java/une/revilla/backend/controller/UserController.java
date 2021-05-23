@@ -37,7 +37,6 @@ public class UserController {
     @Qualifier("userService")
     private final UserService userService;
 
-    @GetMapping()
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<DataUserDto> getUsers() {
         List<UserDto> allUsers = this.userService.findAllUsers();
@@ -58,14 +57,13 @@ public class UserController {
     public ResponseEntity<DataUserDto> create(@Valid @RequestBody UserDto userDto) {
         UserDto userSaved = this.userService.saveUser(userDto);
         DataUserDto personData = DataUserDto.getInstance(userSaved);
-        return new ResponseEntity<>(personData, HttpStatus.CREATED);
+        return ResponseEntity.status(HttpStatus.CREATED).body(personData);
     }
 
     // TODO: update later with DTO
     @PostMapping("/task/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR', 'USER')")
-    public ResponseEntity<MessageResponse> addTaskUser(@PathVariable Long id,
-                                                       @RequestBody Task task) {
+    public ResponseEntity<MessageResponse> addTaskUser(@PathVariable Long id, @RequestBody Task task) {
         MessageResponse message = this.userService.addTaskUser(id, task);
         return new ResponseEntity<>(message, HttpStatus.OK);
     }
@@ -73,16 +71,14 @@ public class UserController {
     // TODO: update later with DTO
     @PutMapping("/task/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR', 'USER')")
-    public ResponseEntity<User> updateTaskUser(@PathVariable("id") Long userId,
-                                               @RequestBody TaskRequest taskToUpdate) {
+    public ResponseEntity<User> updateTaskUser(@PathVariable("id") Long userId, @RequestBody TaskRequest taskToUpdate) {
         User user = this.userService.updateTaskUser(userId, taskToUpdate);
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PutMapping("/{id}/edit")
     @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<DataUserDto> update(@PathVariable Long id,
-                                              @Valid @RequestBody UserDto userDto) {
+    public ResponseEntity<DataUserDto> update(@PathVariable Long id, @Valid @RequestBody UserDto userDto) {
         UserDto userSaved = this.userService.updateUser(id, userDto);
         DataUserDto personData = DataUserDto.getInstance(userSaved);
         return ResponseEntity.status(HttpStatus.OK).body(personData);
@@ -91,8 +87,7 @@ public class UserController {
     // TODO: update later with DTO
     @PutMapping("/admin/{userId}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<UserDto> updateUserByAdmin(@PathVariable Long userId,
-                                                      @RequestBody UserRequest userRequest) {
+    public ResponseEntity<UserDto> updateUserByAdmin(@PathVariable Long userId, @RequestBody UserRequest userRequest) {
         UserDto userDto = this.userService.updateUserByAdmin(userId, userRequest);
         return ResponseEntity.ok(userDto);
     }

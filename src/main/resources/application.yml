@@ -4,7 +4,7 @@ spring:
       name: lucas
       password: lucas361
   datasource:
-    driverClassName: com.mysql.cj.jdbc.Driver
+    driver-class-name: com.mysql.cj.jdbc.Driver
     platform: mysql
     url: jdbc:mysql://localhost:3306/tasks_db?serverTimezone=UTC
     username: root
