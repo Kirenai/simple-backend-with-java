@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import une.revilla.backend.dto.RoleDto;
 import une.revilla.backend.dto.mapper.RoleMapper;
 import une.revilla.backend.entity.Role;
+import une.revilla.backend.exception.role.RoleNoSuchElementException;
 import une.revilla.backend.repository.RoleRepository;
 import une.revilla.backend.service.RoleService;
 
@@ -32,8 +33,7 @@ public class RoleServiceImp implements RoleService {
 
     @Override
     public RoleDto findRoleById(Long id) {
-        Role role = this.roleRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("The role with that id was not found"));
+        Role role = this.findRole(id);
         return this.roleMapper.toRoleDto(role);
     }
 
@@ -48,19 +48,28 @@ public class RoleServiceImp implements RoleService {
     @Transactional
     @Override
     public RoleDto updateRole(Long id, RoleDto roleDto) {
-        Role role = this.roleRepository.findById(id)
-            .orElseThrow(() -> new NoSuchElementException("The role with that id was not found"));
+        Role role = this.findRole(id);
         role.setName(roleDto.getName());
         Role roleSaved = this.roleRepository.save(role);
-        return this.roleMapper.toRoleDto(roleSaved);
+        return this.roleMapper.toRoleDto(roleSaved).setMessage("The role has been updated successfully");
     }
 
     @Transactional
     @Override
     public RoleDto deleteRole(Long id) {
-        RoleDto roleDtoFound = this.findRoleById(id);
-        Role role = this.roleMapper.toRole(roleDtoFound);
-        this.roleRepository.delete(role);
-        return roleDtoFound;
+        this.roleRepository.delete(this.findRole(id));
+        RoleDto roleDto = new RoleDto().setMessage("The role has beed removed successfully");
+        return roleDto;
+    }
+
+    /**
+     * Find one role entity
+     * 
+     * @param id To find role persistences
+     * @return A Role entity found with id
+     */
+    private Role findRole(Long id) {
+        return this.roleRepository.findById(id)
+                .orElseThrow(() -> new RoleNoSuchElementException("The role with that id was not found"));
     }
 }

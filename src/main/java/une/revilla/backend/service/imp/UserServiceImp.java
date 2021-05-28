@@ -19,7 +19,7 @@ import une.revilla.backend.dto.mapper.UserMapper;
 import une.revilla.backend.entity.Role;
 import une.revilla.backend.entity.Task;
 import une.revilla.backend.entity.User;
-import une.revilla.backend.enums.RoleEnum;
+import une.revilla.backend.enums.role.RoleEnum;
 import une.revilla.backend.exception.user.UserNoSuchElementException;
 import une.revilla.backend.payload.request.TaskRequest;
 import une.revilla.backend.payload.request.UserRequest;
@@ -40,12 +40,13 @@ public class UserServiceImp implements UserService {
     private final TaskRepository taskRepository;
     @Qualifier("roleRepository")
     private final RoleRepository roleRepository;
-    
+
     private final PasswordEncoder passwordEncoder;
     private final UserMapper userMapper;
 
     /**
      * Returns a list of all users
+     * 
      * @return List<UserDto>
      */
     @Override
@@ -60,16 +61,15 @@ public class UserServiceImp implements UserService {
 
     @Override
     public UserDto findByUsername(String username) {
-        User user = this.userRepository.findByUsername(username)
-                .orElseThrow();
+        User user = this.userRepository.findByUsername(username).orElseThrow();
         return this.userMapper.toUserDto(user);
     }
 
     /**
-     * User registration by administrator
-     * This method is called only when the administrator needs add new user
+     * User registration by administrator This method is called only when the
+     * administrator needs add new user
      *
-     * @param UserDto The Data Transfer Object of the new User persistence 
+     * @param UserDto The Data Transfer Object of the new User persistence
      * @return returns a UserDTO object with the user's data
      */
     @Transactional
@@ -82,10 +82,7 @@ public class UserServiceImp implements UserService {
         user.setEmail(userDto.getEmail());
         user.setFullName(userDto.getFullName());
 
-        Set<String> rolesDto = userDto.getRoles()
-                .stream()
-                .map(RoleDto::getName)
-                .collect(Collectors.toSet());
+        Set<String> rolesDto = userDto.getRoles().stream().map(RoleDto::getName).collect(Collectors.toSet());
         Set<Role> roles = new HashSet<>();
 
         if (rolesDto.size() == 0) {
@@ -94,16 +91,13 @@ public class UserServiceImp implements UserService {
         } else {
             rolesDto.forEach(role -> {
                 if (role.equals("admin")) {
-                    Role roleAdmin = this.roleRepository.findByName(RoleEnum.ADMIN.getRole())
-                            .orElseThrow();
+                    Role roleAdmin = this.roleRepository.findByName(RoleEnum.ADMIN.getRole()).orElseThrow();
                     roles.add(roleAdmin);
                 } else if (role.equals("mod")) {
-                    Role roleModerator = this.roleRepository.findByName(RoleEnum.MODERATOR.getRole())
-                            .orElseThrow();
+                    Role roleModerator = this.roleRepository.findByName(RoleEnum.MODERATOR.getRole()).orElseThrow();
                     roles.add(roleModerator);
                 } else {
-                    Role roleUser = this.roleRepository.findByName(RoleEnum.USER.getRole())
-                            .orElseThrow();
+                    Role roleUser = this.roleRepository.findByName(RoleEnum.USER.getRole()).orElseThrow();
                     roles.add(roleUser);
                 }
             });
@@ -117,8 +111,8 @@ public class UserServiceImp implements UserService {
     /**
      * Updated User
      * 
-     * @param id User id in persistence
-     * @param userDto The Data Transfer Object update the user 
+     * @param id      User id in persistence
+     * @param userDto The Data Transfer Object update the user
      * @return retorna
      */
     @Override
@@ -133,14 +127,13 @@ public class UserServiceImp implements UserService {
 
         User save = this.userRepository.save(userToUpdate);
         System.out.println(save);
-        return this.userMapper.toUserDto(save)
-                .setMessage("The user has been updated successfully!");
+        return this.userMapper.toUserDto(save).setMessage("The user has been updated successfully!");
     }
 
     /**
      * Returns a DTO of the user entity with all its updated information
      *
-     * @param userId id of the User to update
+     * @param userId   id of the User to update
      * @param userData User information to change
      * @return A UserDto
      */
@@ -172,8 +165,7 @@ public class UserServiceImp implements UserService {
     @Override
     public UserDto deleteUserById(Long id) {
         this.userRepository.delete(this.getUserById(id));
-        UserDto userDto = new UserDto()
-                .setMessage("The user has been successfully removed!");
+        UserDto userDto = new UserDto().setMessage("The user has been successfully removed!");
         return userDto;
     }
 
@@ -217,10 +209,7 @@ public class UserServiceImp implements UserService {
     private UserDto updateByAdmin(Long userId, UserRequest userData) {
         User userToUpdate = this.transformToUser(userId, userData);
 
-        Set<Role> newRoles = userData.getRoles()
-                .stream()
-                .map(this::insertRoles)
-                .collect(Collectors.toSet());
+        Set<Role> newRoles = userData.getRoles().stream().map(this::insertRoles).collect(Collectors.toSet());
 
         if (newRoles.isEmpty()) {
             Set<Role> roleUser = new HashSet<>(Set.of(this.insertRoles("user")));

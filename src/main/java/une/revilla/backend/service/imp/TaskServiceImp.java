@@ -7,7 +7,7 @@ import une.revilla.backend.dto.TaskDto;
 import une.revilla.backend.dto.mapper.TaskMapper;
 import une.revilla.backend.entity.Task;
 import une.revilla.backend.entity.User;
-import une.revilla.backend.enums.TaskMessageEnum;
+import une.revilla.backend.enums.task.TaskMessageEnum;
 import une.revilla.backend.exception.task.TaskNoSuchElementException;
 import une.revilla.backend.exception.user.UserNoSuchElementException;
 import une.revilla.backend.repository.TaskRepository;
@@ -49,9 +49,7 @@ public class TaskServiceImp implements TaskService {
     @Override
     public TaskDto updateTask(Long userId, TaskDto taskData) {
         User userToUpdateTask = this.getUserById(userId);
-        boolean hasTask = userToUpdateTask.getTasks()
-                .stream()
-                .anyMatch(it -> it.getId().equals(taskData.getId()));
+        boolean hasTask = userToUpdateTask.getTasks().stream().anyMatch(it -> it.getId().equals(taskData.getId()));
         if (hasTask) {
             Task taskToUpdate = this.getTaskById(taskData.getId());
             taskToUpdate.setTitle(taskData.getTitle());
@@ -60,47 +58,38 @@ public class TaskServiceImp implements TaskService {
             return this.taskMapper.toTaskDto(this.taskRepository.save(taskToUpdate))
                     .setMessage(TaskMessageEnum.UPDATED_TASK.getMessage());
         }
-        return new TaskDto()
-                .setMessage(TaskMessageEnum.DOES_NOT_TASK_USER.getMessage());
+        return new TaskDto().setMessage(TaskMessageEnum.DOES_NOT_TASK_USER.getMessage());
     }
 
     @Override
     public TaskDto deleteTaskById(Long taskId) {
         Task taskFound = this.getTaskById(taskId);
         this.taskRepository.delete(taskFound);
-        return new TaskDto()
-                .setMessage(TaskMessageEnum.REMOVED_BY_ADMIN_MODERATOR.getMessage());
+        return new TaskDto().setMessage(TaskMessageEnum.REMOVED_BY_ADMIN_MODERATOR.getMessage());
     }
 
     @Override
     public TaskDto deleteTaskByUserId(Long userId, Long taskId) {
         String message = TaskMessageEnum.DOES_NOT_TASK_USER.getMessage();
         User user = this.getUserById(userId);
-        boolean hasTask = user.getTasks()
-                .stream()
-                .anyMatch(task -> task.getId().equals(taskId));
+        boolean hasTask = user.getTasks().stream().anyMatch(task -> task.getId().equals(taskId));
         if (hasTask) {
             this.taskRepository.deleteById(taskId);
             message = TaskMessageEnum.REMOVED_BY_USER.getMessage();
         }
-        return new TaskDto()
-                .setMessage(message);
+        return new TaskDto().setMessage(message);
     }
 
     @Override
     public List<TaskDto> findTasksByUserId(Long userId) {
-        List<Task> userTasksList= this.taskRepository.findTasksByUserId(userId)
-                .orElseThrow(() -> new TaskNoSuchElementException(
-                    TaskMessageEnum.TASKS_NOT_FOUND.getMessage() + userId
-                ));
+        List<Task> userTasksList = this.taskRepository.findTasksByUserId(userId).orElseThrow(
+                () -> new TaskNoSuchElementException(TaskMessageEnum.TASKS_NOT_FOUND.getMessage() + userId));
         return this.taskMapper.toTaskDtoList(userTasksList);
     }
 
     private Task getTaskById(Long id) {
         return this.taskRepository.findById(id)
-                .orElseThrow(() -> new TaskNoSuchElementException(
-                    TaskMessageEnum.TASK_NOT_FOUND.getMessage() + id)
-                );
+                .orElseThrow(() -> new TaskNoSuchElementException(TaskMessageEnum.TASK_NOT_FOUND.getMessage() + id));
     }
 
     /**
@@ -111,9 +100,6 @@ public class TaskServiceImp implements TaskService {
      */
     private User getUserById(Long id) {
         return this.userRepository.findById(id)
-                .orElseThrow(() -> new UserNoSuchElementException(
-                    TaskMessageEnum.USER_NOT_FOUND.getMessage() + id)
-                );
+                .orElseThrow(() -> new UserNoSuchElementException(TaskMessageEnum.USER_NOT_FOUND.getMessage() + id));
     }
 }
-

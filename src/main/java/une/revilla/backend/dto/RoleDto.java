@@ -23,4 +23,5 @@ public class RoleDto implements Serializable {
     @NotEmpty(message = "Please provide role name")
     private String name;
 
+    private String message;
 }

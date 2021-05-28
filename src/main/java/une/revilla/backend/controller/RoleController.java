@@ -2,6 +2,8 @@ package une.revilla.backend.controller;
 
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,51 +18,57 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import lombok.AllArgsConstructor;
+import une.revilla.backend.dto.DataRoleDto;
 import une.revilla.backend.dto.RoleDto;
 import une.revilla.backend.service.RoleService;
 import org.springframework.web.bind.annotation.PutMapping;
-
 
 @RestController
 @CrossOrigin
 @AllArgsConstructor
 @RequestMapping("/api/role")
 public class RoleController {
-    
+
     @Qualifier("roleService")
     private final RoleService roleService;
 
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<RoleDto>> findRoles() {
-        return ResponseEntity.ok().body(this.roleService.findRoles());
+    public ResponseEntity<DataRoleDto> getRoles() {
+        List<RoleDto> allRoles = this.roleService.findRoles();
+        DataRoleDto data = DataRoleDto.getInstance(allRoles);
+        return ResponseEntity.status(HttpStatus.OK).body(data);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RoleDto> findOneRole(@PathVariable Long id) {
-        RoleDto role = this.roleService.findRoleById(id);
-        return ResponseEntity.ok().body(role);
+    public ResponseEntity<DataRoleDto> getRole(@PathVariable Long id) {
+        RoleDto roleDto = this.roleService.findRoleById(id);
+        DataRoleDto roleData = DataRoleDto.getInstance(roleDto);
+        return ResponseEntity.status(HttpStatus.OK).body(roleData);
     }
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RoleDto> createRole(@RequestBody RoleDto roleDto) {
+    public ResponseEntity<DataRoleDto> create(@Valid @RequestBody RoleDto roleDto) {
         RoleDto savedRole = this.roleService.createRole(roleDto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(savedRole);
+        DataRoleDto roleData = DataRoleDto.getInstance(savedRole);
+        return ResponseEntity.status(HttpStatus.CREATED).body(roleData);
     }
 
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RoleDto> updateRole(@PathVariable Long id, @RequestBody RoleDto roleDto) {
-        RoleDto updatedRole = this.roleService.updateRole( id, roleDto);
-        return ResponseEntity.ok().body(updatedRole);
+    public ResponseEntity<DataRoleDto> update(@PathVariable Long id, @Valid @RequestBody RoleDto roleDto) {
+        RoleDto updatedRole = this.roleService.updateRole(id, roleDto);
+        DataRoleDto dataRole = DataRoleDto.getInstance(updatedRole);
+        return ResponseEntity.status(HttpStatus.OK).body(dataRole);
     }
 
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<RoleDto> deleteRole(@PathVariable Long id) {
+    public ResponseEntity<DataRoleDto> delete(@PathVariable Long id) {
         RoleDto roleRemoved = this.roleService.deleteRole(id);
-        return ResponseEntity.ok().body(roleRemoved);
+        DataRoleDto dataRole = DataRoleDto.getInstance(roleRemoved);
+        return ResponseEntity.status(HttpStatus.OK).body(dataRole);
     }
 }
