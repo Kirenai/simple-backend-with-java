@@ -15,15 +15,19 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.experimental.Accessors;
 
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
-@Accessors(chain = true) //Setters return this | object.set().set().set().etc
-@JsonInclude(JsonInclude.Include.NON_NULL) //if the property is null, it won´t come out in the JSON
-@JsonIgnoreProperties(ignoreUnknown = true) //Ignore Properties #ignoreUnkown = true : accept other properties, don't throw UnrecognizedPropertyException
+@AllArgsConstructor
+@Builder
+@Accessors(chain = true)
+@JsonInclude(JsonInclude.Include.NON_NULL)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class UserDto {
 
     private Long id;
@@ -47,12 +51,12 @@ public class UserDto {
     private String fullName;
 
     private LocalDateTime createdAt;
+
     private LocalDateTime updatedAt;
 
     private Collection<TaskDto> tasks;
-    // @NotEmpty(message = "Please provide roles")
     private Collection<RoleDto> roles;
+
     private String message;
-    
 
 }

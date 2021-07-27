@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,8 +23,6 @@ import une.revilla.backend.entity.User;
 import une.revilla.backend.enums.role.RoleEnum;
 import une.revilla.backend.exception.user.UserNoSuchElementException;
 import une.revilla.backend.payload.request.TaskRequest;
-import une.revilla.backend.payload.request.UserRequest;
-import une.revilla.backend.payload.response.MessageResponse;
 import une.revilla.backend.repository.RoleRepository;
 import une.revilla.backend.repository.TaskRepository;
 import une.revilla.backend.repository.UserRepository;
@@ -45,13 +44,14 @@ public class UserServiceImp implements UserService {
     private final UserMapper userMapper;
 
     /**
-     * Returns a list of all users
-     * 
+     * Returns a paginated list of users
      * @return List<UserDto>
      */
     @Override
-    public List<UserDto> findAllUsers() {
-        return this.userMapper.toUserDtoList(this.userRepository.findAll());
+    public List<UserDto> findAllUsers(Pageable pageable) {
+        List<User> userPaginatedList = this.userRepository.findAll(pageable)
+            .getContent();
+        return this.userMapper.toUserDtoList(userPaginatedList);
     }
 
     @Override
@@ -68,8 +68,7 @@ public class UserServiceImp implements UserService {
     /**
      * User registration by administrator This method is called only when the
      * administrator needs add new user
-     *
-     * @param UserDto The Data Transfer Object of the new User persistence
+     * @param userDto The Data Transfer Object of the new User persistence
      * @return returns a UserDTO object with the user's data
      */
     @Transactional
@@ -82,22 +81,33 @@ public class UserServiceImp implements UserService {
         user.setEmail(userDto.getEmail());
         user.setFullName(userDto.getFullName());
 
-        Set<String> rolesDto = userDto.getRoles().stream().map(RoleDto::getName).collect(Collectors.toSet());
+        Set<String> rolesDto = userDto.getRoles()
+            .stream()
+            .map(RoleDto::getName)
+            .collect(Collectors.toSet());
         Set<Role> roles = new HashSet<>();
 
         if (rolesDto.size() == 0) {
-            Role roleUser = this.roleRepository.findByName(RoleEnum.USER.getRole()).orElseThrow();
+            Role roleUser = this.roleRepository
+                .findByName(RoleEnum.USER.getRole())
+                .orElseThrow();
             roles.add(roleUser);
         } else {
             rolesDto.forEach(role -> {
                 if (role.equals("admin")) {
-                    Role roleAdmin = this.roleRepository.findByName(RoleEnum.ADMIN.getRole()).orElseThrow();
+                    Role roleAdmin = this.roleRepository
+                        .findByName(RoleEnum.ADMIN.getRole())
+                        .orElseThrow();
                     roles.add(roleAdmin);
                 } else if (role.equals("mod")) {
-                    Role roleModerator = this.roleRepository.findByName(RoleEnum.MODERATOR.getRole()).orElseThrow();
+                    Role roleModerator = this.roleRepository
+                        .findByName(RoleEnum.MODERATOR.getRole())
+                        .orElseThrow();
                     roles.add(roleModerator);
                 } else {
-                    Role roleUser = this.roleRepository.findByName(RoleEnum.USER.getRole()).orElseThrow();
+                    Role roleUser = this.roleRepository
+                        .findByName(RoleEnum.USER.getRole())
+                        .orElseThrow();
                     roles.add(roleUser);
                 }
             });
@@ -110,7 +120,6 @@ public class UserServiceImp implements UserService {
 
     /**
      * Updated User
-     * 
      * @param id      User id in persistence
      * @param userDto The Data Transfer Object update the user
      * @return retorna
@@ -127,19 +136,19 @@ public class UserServiceImp implements UserService {
 
         User save = this.userRepository.save(userToUpdate);
         System.out.println(save);
-        return this.userMapper.toUserDto(save).setMessage("The user has been updated successfully!");
+        return this.userMapper.toUserDto(save)
+            .setMessage("The user has been updated successfully!");
     }
 
     /**
-     * Returns a DTO of the user entity with all its updated information
-     *
-     * @param userId   id of the User to update
-     * @param userData User information to change
+     * Returns a DTO of the user entity with all its updated information,
+     * without updating tasks
+     * @param userDto User information to change
      * @return A UserDto
      */
     @Override
-    public UserDto updateUserByAdmin(Long userId, UserRequest userData) {
-        return this.updateByAdmin(userId, userData);
+    public UserDto updateUserByAdmin(UserDto userDto) {
+        return this.updateByAdmin(userDto);
     }
 
     @Override
@@ -165,21 +174,12 @@ public class UserServiceImp implements UserService {
     @Override
     public UserDto deleteUserById(Long id) {
         this.userRepository.delete(this.getUserById(id));
-        UserDto userDto = new UserDto().setMessage("The user has been successfully removed!");
-        return userDto;
-    }
-
-    @Override
-    public MessageResponse addTaskUser(Long id, Task task) {
-        User user = this.getUserById(id);
-        task.setUser(user);
-        this.taskRepository.save(task);
-        return new MessageResponse("New task added to user");
+        return new UserDto()
+            .setMessage("The user has been successfully removed!");
     }
 
     /**
      * Returned true if parameter passed is in the DB
-     *
      * @param email Parameter to search in the DB
      * @return true or false, whether it exists or not
      */
@@ -201,60 +201,68 @@ public class UserServiceImp implements UserService {
 
     /**
      * Returns a DTO with the necessary information for the ADMIN
-     *
-     * @param userId   Of the user that will be updated
-     * @param userData The data to update
+     * @param userDto The data to update
      * @return A UserDto
      */
-    private UserDto updateByAdmin(Long userId, UserRequest userData) {
-        User userToUpdate = this.transformToUser(userId, userData);
-
-        Set<Role> newRoles = userData.getRoles().stream().map(this::insertRoles).collect(Collectors.toSet());
-
-        if (newRoles.isEmpty()) {
-            Set<Role> roleUser = new HashSet<>(Set.of(this.insertRoles("user")));
-            userToUpdate.setRoles(roleUser);
-        } else {
-            userToUpdate.setRoles(newRoles);
-        }
-
-        return this.userMapper.toUserDto(this.userRepository.save(userToUpdate))
-                .setMessage("User updated by an Administrator");
+    private UserDto updateByAdmin(UserDto userDto) {
+        User userFound = this.updateUserInformationWithoutTask(
+                userDto.getId(),
+                userDto
+        );
+        return this.userMapper.toUserDto(this.userRepository.save(userFound))
+                .setMessage("The user was updated by an administrator");
     }
 
     /**
      * Returns the information transformed from the received data to a User object
-     *
-     * @param userRequest Incoming information for the User Object
+     * @Param id Id of the user to search
+     * @param userDto Incoming information for the User Object
      * @return A User Entity with data
      */
-    private User transformToUser(Long id, UserRequest userRequest) {
+    private User updateUserInformationWithoutTask(Long id, UserDto userDto) {
         User user = this.getUserById(id);
 
-        user.setUsername(userRequest.getUsername());
-        user.setPassword(passwordEncoder.encode(userRequest.getPassword()));
-        user.setEmail(userRequest.getEmail());
-        user.setFullName(userRequest.getFullName());
+        user.setUsername(userDto.getUsername());
+        user.setPassword(passwordEncoder.encode(userDto.getPassword()));
+        user.setEmail(userDto.getEmail());
+        user.setFullName(userDto.getFullName());
+
+        Set<Role> roles = userDto.getRoles()
+            .stream()
+            .map(RoleDto::getName)
+            .map(this::insertRoles)
+            .collect(Collectors.toSet());
+
+        if (roles.isEmpty()) {
+            roles.add(this.insertRoles("user"));
+            user.setRoles(roles);
+        } else {
+            user.setRoles(roles);
+        }
 
         return user;
     }
 
     /**
-     * Returns a selected role from the DB of the parameter provided for the user
-     *
+     * Returns a selected role from the DB of the parameter provided for the
+     * user
      * @param role Parameter that has the information of the role to search
      * @return A role for the User
      */
     private Role insertRoles(String role) {
         if (role.equals("admin")) {
             return this.roleRepository.findByName(RoleEnum.ADMIN.getRole())
-                    .orElseThrow(() -> new IllegalStateException("Role not found"));
+                    .orElseThrow(() -> 
+                            new IllegalStateException("Role not found"));
         } else if (role.equals("mod")) {
             return this.roleRepository.findByName(RoleEnum.MODERATOR.getRole())
-                    .orElseThrow(() -> new IllegalStateException("Role not found"));
+                    .orElseThrow(() -> 
+                            new IllegalStateException("Role not found"));
         } else {
             return this.roleRepository.findByName(RoleEnum.USER.getRole())
-                    .orElseThrow(() -> new IllegalStateException("Role not found"));
+                    .orElseThrow(() -> 
+                            new IllegalStateException("Role not found"));
         }
     }
+
 }

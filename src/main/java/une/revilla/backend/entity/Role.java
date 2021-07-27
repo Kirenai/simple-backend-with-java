@@ -14,6 +14,7 @@ import java.util.Collection;
 @NoArgsConstructor
 @Entity
 @Table(name = "roles")
+@Builder
 public class Role {
 
     @Id
