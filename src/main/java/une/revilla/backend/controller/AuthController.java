@@ -4,6 +4,7 @@ import io.jsonwebtoken.Jwts;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -37,6 +38,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final SecretKey secretKey;
     private final JwtConfig jwtConfig;
+    @Qualifier("userService")
     private final UserService userService;
     private final UserRepository userRepository;
     private final UserMapper userMapper;

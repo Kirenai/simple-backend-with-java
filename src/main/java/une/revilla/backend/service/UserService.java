@@ -1,12 +1,9 @@
 package une.revilla.backend.service;
 
-import java.util.List;
-
 import org.springframework.data.domain.Pageable;
-
 import une.revilla.backend.dto.UserDto;
-import une.revilla.backend.entity.User;
-import une.revilla.backend.payload.request.TaskRequest;
+
+import java.util.List;
 
 public interface UserService {
 
@@ -25,7 +22,5 @@ public interface UserService {
     UserDto deleteUserById(Long id);
 
     Boolean existsByEmail(String email);
-
-    User updateTaskUser(Long userId, TaskRequest taskToUpdate);
 
 }

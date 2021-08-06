@@ -1,32 +1,26 @@
 package une.revilla.backend.service.imp;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import lombok.RequiredArgsConstructor;
 import une.revilla.backend.dto.RoleDto;
 import une.revilla.backend.dto.UserDto;
 import une.revilla.backend.dto.mapper.UserMapper;
 import une.revilla.backend.entity.Role;
-import une.revilla.backend.entity.Task;
 import une.revilla.backend.entity.User;
 import une.revilla.backend.enums.role.RoleEnum;
 import une.revilla.backend.exception.user.UserNoSuchElementException;
-import une.revilla.backend.payload.request.TaskRequest;
 import une.revilla.backend.repository.RoleRepository;
-import une.revilla.backend.repository.TaskRepository;
 import une.revilla.backend.repository.UserRepository;
 import une.revilla.backend.service.UserService;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +29,6 @@ public class UserServiceImp implements UserService {
 
     @Qualifier("userRepository")
     private final UserRepository userRepository;
-    @Qualifier("taskRepository")
-    private final TaskRepository taskRepository;
     @Qualifier("roleRepository")
     private final RoleRepository roleRepository;
 
@@ -122,7 +114,7 @@ public class UserServiceImp implements UserService {
      * Updated User
      * @param id      User id in persistence
      * @param userDto The Data Transfer Object update the user
-     * @return retorna
+     * @return return A User Updated
      */
     @Override
     public UserDto updateUser(Long id, UserDto userDto) {
@@ -149,26 +141,6 @@ public class UserServiceImp implements UserService {
     @Override
     public UserDto updateUserByAdmin(UserDto userDto) {
         return this.updateByAdmin(userDto);
-    }
-
-    @Override
-    public User updateTaskUser(Long userId, TaskRequest taskToUpdate) {
-        User user = this.getUserById(userId);
-
-        Collection<Task> tasks = user.getTasks();
-        Collection<Task> tasksUpdate = new ArrayList<>();
-
-        tasks.forEach(task -> {
-            if (task.getId().equals(taskToUpdate.getId())) {
-                task.setTitle(taskToUpdate.getTitle());
-                task.setAuthor(taskToUpdate.getAuthor());
-                task.setDescription(taskToUpdate.getDescription());
-            }
-            tasksUpdate.add(task);
-        });
-
-        user.setTasks(tasksUpdate);
-        return this.userRepository.save(user);
     }
 
     @Override
@@ -215,7 +187,7 @@ public class UserServiceImp implements UserService {
 
     /**
      * Returns the information transformed from the received data to a User object
-     * @Param id Id of the user to search
+     * @param id Id of the user to search
      * @param userDto Incoming information for the User Object
      * @return A User Entity with data
      */
@@ -235,10 +207,8 @@ public class UserServiceImp implements UserService {
 
         if (roles.isEmpty()) {
             roles.add(this.insertRoles("user"));
-            user.setRoles(roles);
-        } else {
-            user.setRoles(roles);
         }
+        user.setRoles(roles);
 
         return user;
     }
