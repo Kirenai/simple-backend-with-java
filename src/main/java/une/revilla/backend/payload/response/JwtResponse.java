@@ -10,7 +10,6 @@ import java.util.Collection;
 @RequiredArgsConstructor
 @NoArgsConstructor
 public class JwtResponse {
-
     @NonNull
     private Long id;
     @NonNull
