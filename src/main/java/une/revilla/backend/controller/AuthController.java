@@ -31,7 +31,7 @@ import java.util.Date;
 @Slf4j
 @CrossOrigin
 @RequiredArgsConstructor
-@RequestMapping("/api")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private final AuthenticationManager authenticationManager;
@@ -41,12 +41,12 @@ public class AuthController {
     private final UserRepository userRepository;
     private final UserMapper userMapper;
 
-    @PostMapping("/auth/login")
+    @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(
             @Valid @RequestBody LoginRequest loginRequest) {
         Authentication authenticate;
         try {
-             authenticate = this.authenticationManager.authenticate(
+            authenticate = this.authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(
                             loginRequest.getUsername(),
                             loginRequest.getPassword())
@@ -63,9 +63,9 @@ public class AuthController {
                 .claim("authorities", authenticate.getAuthorities())
                 .setIssuedAt(new Date())
                 .setExpiration(java.sql.Date.valueOf(LocalDate.now()
-                            .plusDays(jwtConfig.getTokenExpirationAfterDays())
-                            )
+                                .plusDays(jwtConfig.getTokenExpirationAfterDays())
                         )
+                )
                 .signWith(this.secretKey)
                 .compact();
 
@@ -73,7 +73,7 @@ public class AuthController {
 
         return ResponseEntity.ok(new JwtResponse(
                 user.getId(),
-                "Bearer "+token,
+                "Bearer " + token,
                 user.getUsername(),
                 user.getEmail(),
                 user.getFullName(),
@@ -81,7 +81,7 @@ public class AuthController {
         );
     }
 
-    @PostMapping("/auth/register")
+    @PostMapping("/register")
     public ResponseEntity<?> registerUser(@Valid @RequestBody UserDto userDto) {
         if (this.userService.existsByEmail(userDto.getEmail())) {
             log.error("Email is already exists!");
@@ -89,12 +89,12 @@ public class AuthController {
                     .body(new MessageResponse("E/R: Email is already exists!"));
         }
 
-        User newUser = this.userMapper.toUser(userDto); 
+        User newUser = this.userMapper.toUser(userDto);
         User userCreated = this.userRepository.save(newUser);
         log.info("User registered successfully with his Id {}", userCreated.getId());
 
         return ResponseEntity.status(HttpStatus.CREATED)
-            .body(new MessageResponse("User registered successfully!"));
+                .body(new MessageResponse("User registered successfully!"));
     }
 }
 
