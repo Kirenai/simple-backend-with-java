@@ -31,4 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+backendproject.session.sql
 
+### Vim ###
+*.swp

@@ -1,4 +1,4 @@
-package une.revilla.backend.exception.auth;
+package une.revilla.backend.exception.user;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthErrorMessage {
+public class UserErrorMessage {
 
     private Integer statusCode;
     private LocalDateTime timestamp;

@@ -1,64 +1,111 @@
 package une.revilla.backend.service.imp;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import une.revilla.backend.dto.TaskDto;
+import une.revilla.backend.dto.mapper.TaskMapper;
 import une.revilla.backend.entity.Task;
+import une.revilla.backend.entity.User;
+import une.revilla.backend.enums.task.TaskMessageEnum;
 import une.revilla.backend.exception.task.TaskNoSuchElementException;
+import une.revilla.backend.exception.user.UserNoSuchElementException;
 import une.revilla.backend.repository.TaskRepository;
+import une.revilla.backend.repository.UserRepository;
 import une.revilla.backend.service.TaskService;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 @Qualifier("taskService")
 public class TaskServiceImp implements TaskService {
 
+    @Qualifier("taskRepository")
     private final TaskRepository taskRepository;
+    @Qualifier("userRepository")
+    private final UserRepository userRepository;
+    private final TaskMapper taskMapper;
 
-    @Autowired
-    public TaskServiceImp(@Qualifier("taskRepository") TaskRepository taskRepository) {
-        this.taskRepository = taskRepository;
+    @Override
+    public List<TaskDto> findAllTasks() {
+        return this.taskMapper.toTaskDtoList(this.taskRepository.findAll());
     }
 
     @Override
-    public List<Task> findAllTasks() {
-        return taskRepository.findAll();
+    public TaskDto findTaskById(Long id) {
+        Task task = this.getTaskById(id);
+        return this.taskMapper.toTaskDto(task);
     }
 
     @Override
-    public Task findTaskById(Long id) {
-        return this.taskRepository.findById(id)
-                .orElseThrow(() -> new TaskNoSuchElementException("Task no found " + id));
+    public List<TaskDto> findTasksByUserId(Long userId) {
+        List<Task> userTasksList = this.taskRepository.findTasksByUserId(userId)
+            .orElseThrow(() -> {
+                return new TaskNoSuchElementException(
+                        TaskMessageEnum.TASKS_NOT_FOUND.getMessage() + userId
+                );
+            });
+        return this.taskMapper.toTaskDtoList(userTasksList);
     }
 
     @Override
-    public Task saveTask(Task newTask) {
-        Task taskSave = taskRepository.save(newTask);
-        return this.findTaskById(taskSave.getId());
+    public TaskDto saveTask(TaskDto taskDto, Long userId) {
+        Task taskToSave = this.taskMapper.toTask(taskDto);
+        User userFound = this.getUserById(userId);
+        taskToSave.setUser(userFound);
+        return this.taskMapper.toTaskDto(this.taskRepository.save(taskToSave));
     }
 
     @Override
-    public Task updateTask(Long id, Task taskData) {
-        Task taskToUpdate = this.findTaskById(id);
-        taskToUpdate.setTitle(taskData.getTitle());
-        taskToUpdate.setDescription(taskData.getDescription());
-        taskToUpdate.setAuthor(taskData.getAuthor());
-        taskRepository.save(taskToUpdate);
-        return this.findTaskById(id);
+    public TaskDto updateTask(Long userId, TaskDto taskData) {
+        User userToUpdateTask = this.getUserById(userId);
+        boolean hasTask = userToUpdateTask.getTasks().stream().anyMatch(it -> it.getId().equals(taskData.getId()));
+        if (hasTask) {
+            Task taskToUpdate = this.getTaskById(taskData.getId());
+            taskToUpdate.setTitle(taskData.getTitle());
+            taskToUpdate.setDescription(taskData.getDescription());
+            taskToUpdate.setAuthor(taskData.getAuthor());
+            return this.taskMapper.toTaskDto(this.taskRepository.save(taskToUpdate))
+                    .setMessage(TaskMessageEnum.UPDATED_TASK.getMessage());
+        }
+        return new TaskDto().setMessage(TaskMessageEnum.DOES_NOT_TASK_USER.getMessage());
     }
 
     @Override
-    public Task deleteTaskById(Long id) {
-        Task taskFound = this.findTaskById(id);
+    public TaskDto deleteTaskById(Long taskId) {
+        Task taskFound = this.getTaskById(taskId);
         this.taskRepository.delete(taskFound);
-        return taskFound;
+        return new TaskDto().setMessage(TaskMessageEnum.REMOVED_BY_ADMIN_MODERATOR.getMessage());
     }
 
     @Override
-    public List<Task> findTaskByUserId(Long id) {
-        return this.taskRepository.findTaskByUserId(id)
-                .orElseThrow();
+    public TaskDto deleteTaskByUserId(Long userId, Long taskId) {
+        String message = TaskMessageEnum.DOES_NOT_TASK_USER.getMessage();
+        User user = this.getUserById(userId);
+        boolean hasTask = user.getTasks()
+            .stream()
+            .anyMatch(task -> task.getId().equals(taskId));
+        if (hasTask) {
+            this.taskRepository.deleteById(taskId);
+            message = TaskMessageEnum.REMOVED_BY_USER.getMessage();
+        }
+        return new TaskDto().setMessage(message);
+    }
+
+    private Task getTaskById(Long id) {
+        return this.taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNoSuchElementException(TaskMessageEnum.TASK_NOT_FOUND.getMessage() + id));
+    }
+
+    /**
+     * Returns the user's information by a given id
+     *
+     * @param id Required parameter to find the entity
+     * @return A User Entity
+     */
+    private User getUserById(Long id) {
+        return this.userRepository.findById(id)
+                .orElseThrow(() -> new UserNoSuchElementException(TaskMessageEnum.USER_NOT_FOUND.getMessage() + id));
     }
 }
-

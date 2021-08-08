@@ -12,5 +12,5 @@ import java.util.Optional;
 @Qualifier("taskRepository")
 public interface TaskRepository extends JpaRepository<Task, Long> {
 
-    Optional<List<Task>> findTaskByUserId(Long id);
+    Optional<List<Task>> findTasksByUserId(Long userId);
 }

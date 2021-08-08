@@ -1,27 +1,22 @@
 package une.revilla.backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "tasks")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@ToString(exclude = {"id", "title", "author",
-        "description", "createAt", "updateAt",
-        "user"})
-@XmlAccessorType(XmlAccessType.FIELD)
+@ToString(exclude = {"user"})
+@Builder
 public class Task {
 
     @Id
@@ -29,10 +24,10 @@ public class Task {
     @Column(name = "task_id")
     private Long id;
 
-    @Column(name = "title")
+    @Column(name = "title", length = 30)
     private String title;
 
-    @Column(name = "author")
+    @Column(name = "author", length = 25)
     private String author;
 
     @Column(name = "description")
@@ -40,15 +35,15 @@ public class Task {
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
-    private LocalDateTime createAt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
-    private LocalDateTime updateAt;
+    private LocalDateTime updatedAt;
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
 }

@@ -13,11 +13,11 @@ import java.util.Set;
 public class RegisterRequest {
 
     @NotBlank(message = "Please provide username")
-    @Size(min = 5, max = 30)
+    @Size(min = 2, max = 30)
     private String username;
 
     @NotBlank(message = "Please provide password")
-    @Size(min = 8, max = 40)
+    @Size(min = 2, max = 40)
     private String password;
 
     @NotBlank(message = "Please provide email")
