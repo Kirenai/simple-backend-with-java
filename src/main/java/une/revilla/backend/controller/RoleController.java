@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @CrossOrigin
 @AllArgsConstructor
-@RequestMapping("/api/role")
+@RequestMapping("/api/roles")
 public class RoleController {
 
     @Qualifier("roleService")

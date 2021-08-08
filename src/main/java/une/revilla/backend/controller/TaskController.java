@@ -15,7 +15,7 @@ import java.util.List;
 @RestController
 @CrossOrigin
 @RequiredArgsConstructor
-@RequestMapping("/api/task")
+@RequestMapping("/api/tasks")
 public class TaskController {
 
     @Qualifier("taskService")
@@ -23,23 +23,16 @@ public class TaskController {
 
     @GetMapping()
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
-    public ResponseEntity<List<TaskDto>> findTasks() {
+    public ResponseEntity<List<TaskDto>> getTasks() {
         List<TaskDto> allTasks = this.taskService.findAllTasks();
         return ResponseEntity.status(HttpStatus.OK).body(allTasks);
     }
 
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR', 'USER')")
-    public ResponseEntity<TaskDto> findTask(@PathVariable Long id) {
+    public ResponseEntity<TaskDto> getTask(@PathVariable Long id) {
         TaskDto taskDto = this.taskService.findTaskById(id);
         return ResponseEntity.status(HttpStatus.OK).body(taskDto);
-    }
-
-    @GetMapping(path = "/user/{userId}")
-    @PreAuthorize(value = "hasRole('USER')")
-    public ResponseEntity<List<TaskDto>> findTasksByUserId(@PathVariable Long userId) {
-        List<TaskDto> userAllTasks = this.taskService.findTasksByUserId(userId);
-        return ResponseEntity.status(HttpStatus.OK).body(userAllTasks);
     }
 
     /**
@@ -69,14 +62,6 @@ public class TaskController {
     @PreAuthorize("hasAnyRole('ADMIN', 'MODERATOR')")
     public ResponseEntity<TaskDto> delete(@PathVariable Long taskId) {
         TaskDto taskDto = this.taskService.deleteTaskById(taskId);
-        return ResponseEntity.status(HttpStatus.OK).body(taskDto);
-    }
-
-    @DeleteMapping("/{userId}/{taskId}")
-    @PreAuthorize("hasRole('USER')")
-    public ResponseEntity<TaskDto> deleteTaskByUserId(@PathVariable Long userId,
-                                                      @PathVariable Long taskId) {
-        TaskDto taskDto = this.taskService.deleteTaskByUserId(userId, taskId);
         return ResponseEntity.status(HttpStatus.OK).body(taskDto);
     }
 

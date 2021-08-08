@@ -39,6 +39,17 @@ public class TaskServiceImp implements TaskService {
     }
 
     @Override
+    public List<TaskDto> findTasksByUserId(Long userId) {
+        List<Task> userTasksList = this.taskRepository.findTasksByUserId(userId)
+            .orElseThrow(() -> {
+                return new TaskNoSuchElementException(
+                        TaskMessageEnum.TASKS_NOT_FOUND.getMessage() + userId
+                );
+            });
+        return this.taskMapper.toTaskDtoList(userTasksList);
+    }
+
+    @Override
     public TaskDto saveTask(TaskDto taskDto, Long userId) {
         Task taskToSave = this.taskMapper.toTask(taskDto);
         User userFound = this.getUserById(userId);
@@ -72,19 +83,14 @@ public class TaskServiceImp implements TaskService {
     public TaskDto deleteTaskByUserId(Long userId, Long taskId) {
         String message = TaskMessageEnum.DOES_NOT_TASK_USER.getMessage();
         User user = this.getUserById(userId);
-        boolean hasTask = user.getTasks().stream().anyMatch(task -> task.getId().equals(taskId));
+        boolean hasTask = user.getTasks()
+            .stream()
+            .anyMatch(task -> task.getId().equals(taskId));
         if (hasTask) {
             this.taskRepository.deleteById(taskId);
             message = TaskMessageEnum.REMOVED_BY_USER.getMessage();
         }
         return new TaskDto().setMessage(message);
-    }
-
-    @Override
-    public List<TaskDto> findTasksByUserId(Long userId) {
-        List<Task> userTasksList = this.taskRepository.findTasksByUserId(userId).orElseThrow(
-                () -> new TaskNoSuchElementException(TaskMessageEnum.TASKS_NOT_FOUND.getMessage() + userId));
-        return this.taskMapper.toTaskDtoList(userTasksList);
     }
 
     private Task getTaskById(Long id) {
