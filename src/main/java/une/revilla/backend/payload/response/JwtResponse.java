@@ -1,7 +1,7 @@
 package une.revilla.backend.payload.response;
 
 import lombok.*;
-import une.revilla.backend.entity.Role;
+import une.revilla.backend.dto.RoleDto;
 
 import java.util.Collection;
 
@@ -22,5 +22,5 @@ public class JwtResponse {
     @NonNull
     private String fullName;
     @NonNull
-    private Collection<Role> roles;
+    private Collection<RoleDto> roles;
 }

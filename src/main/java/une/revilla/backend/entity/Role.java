@@ -1,14 +1,20 @@
 package une.revilla.backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.*;
+import java.util.Collection;
 
-@Entity
-@Table(name = "roles")
-@Data
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString(exclude = {"users"})
 @AllArgsConstructor
 @NoArgsConstructor
+@Entity
+@Table(name = "roles")
+@Builder
 public class Role {
 
     @Id
@@ -16,6 +22,10 @@ public class Role {
     @Column(name = "role_id", nullable = false)
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 20, updatable = false)
+    @Column(name = "name", nullable = false, length = 20)
     private String name;
+
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    @ManyToMany(mappedBy = "roles")
+    private Collection<User> users;
 }

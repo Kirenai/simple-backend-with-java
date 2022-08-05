@@ -1,6 +1,9 @@
 package une.revilla.backend.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.Arrays;
+
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -18,36 +21,37 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import lombok.RequiredArgsConstructor;
 import une.revilla.backend.config.JwtConfig;
 import une.revilla.backend.jwt.AuthEntryPointJwt;
 import une.revilla.backend.jwt.JwtTokenVerifier;
 import une.revilla.backend.jwt.JwtUsernameAndPasswordAuthenticationFilter;
 
-import javax.crypto.SecretKey;
-import java.util.Arrays;
-
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
+@RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    @Qualifier("userDetailsService")
     private final UserDetailsService userDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final JwtConfig jwtConfig;
     private final SecretKey secretKey;
     private final AuthEntryPointJwt authEntryPointJwt;
 
-    @Autowired
-    public SecurityConfig(@Qualifier("userDetailsService") UserDetailsService userDetailsService,
-                          PasswordEncoder passwordEncoder,
-                          JwtConfig jwtConfig,
-                          SecretKey secretKey, AuthEntryPointJwt authEntryPointJwt) {
-        this.userDetailsService = userDetailsService;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtConfig = jwtConfig;
-        this.secretKey = secretKey;
-        this.authEntryPointJwt = authEntryPointJwt;
-    }
+//    @Autowired
+//    public SecurityConfig(@Qualifier("userDetailsService") UserDetailsService userDetailsService,
+//                          PasswordEncoder passwordEncoder,
+//                          JwtConfig jwtConfig,
+//                          SecretKey secretKey, AuthEntryPointJwt authEntryPointJwt) {
+//        this.userDetailsService = userDetailsService;
+//        this.passwordEncoder = passwordEncoder;
+//        this.jwtConfig = jwtConfig;
+//        this.secretKey = secretKey;
+//        this.authEntryPointJwt = authEntryPointJwt;
+//    }
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
@@ -65,21 +69,24 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
 
-        http.cors()
+        http
+                .cors()
                 .and()
-                .csrf().disable()
+                .csrf()
+                    .disable()
                 .exceptionHandling()
-                .authenticationEntryPoint(authEntryPointJwt)
+                    .authenticationEntryPoint(authEntryPointJwt)
                 .and()
                 .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
                 .addFilter(new JwtUsernameAndPasswordAuthenticationFilter(authenticationManager(), this.jwtConfig, this.secretKey))
                 .addFilterBefore(new JwtTokenVerifier(this.jwtConfig, this.secretKey), JwtUsernameAndPasswordAuthenticationFilter.class)
                 .authorizeRequests()
-                .antMatchers("/api/**").hasAnyRole("USER", "ADMIN", "MODERATOR")
+                .antMatchers("/api/**")
+                    .authenticated()
                 .anyRequest()
-                .authenticated();
+                    .authenticated();
 
     }
 

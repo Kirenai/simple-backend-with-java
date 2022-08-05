@@ -1,9 +1,9 @@
 package une.revilla.backend.controller;
 
 import io.jsonwebtoken.Jwts;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -12,9 +12,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import une.revilla.backend.config.JwtConfig;
-import une.revilla.backend.entity.User;
+import une.revilla.backend.dto.UserDto;
 import une.revilla.backend.payload.request.LoginRequest;
-import une.revilla.backend.payload.request.RegisterRequest;
 import une.revilla.backend.payload.response.JwtResponse;
 import une.revilla.backend.payload.response.MessageResponse;
 import une.revilla.backend.service.UserService;
@@ -26,7 +25,8 @@ import java.util.Date;
 
 @RestController
 @CrossOrigin
-@RequestMapping("/api/auth")
+@RequiredArgsConstructor
+@RequestMapping("/api")
 public class AuthController {
 
     private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
@@ -36,17 +36,7 @@ public class AuthController {
     private final JwtConfig jwtConfig;
     private final UserService userService;
 
-    @Autowired
-    public AuthController(AuthenticationManager authenticationManager,
-                          SecretKey secretKey,
-                          JwtConfig jwtConfig, UserService userService) {
-        this.authenticationManager = authenticationManager;
-        this.secretKey = secretKey;
-        this.jwtConfig = jwtConfig;
-        this.userService = userService;
-    }
-
-    @PostMapping("/login")
+    @PostMapping("/auth/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         Authentication authenticate;
         try {
@@ -57,7 +47,7 @@ public class AuthController {
             );
         } catch (BadCredentialsException ex) {
             logger.info("Invalid credentials by user {}", loginRequest);
-            throw new BadCredentialsException("Wrong user, try again");
+            throw new BadCredentialsException("Wrong user, try again " + ex.getLocalizedMessage());
         }
 
         SecurityContextHolder.getContext().setAuthentication(authenticate);
@@ -69,7 +59,7 @@ public class AuthController {
                 .signWith(this.secretKey)
                 .compact();
 
-        User user = this.userService.findByUsername(loginRequest.getUsername());
+        UserDto user = this.userService.findByUsername(loginRequest.getUsername());
         return ResponseEntity.ok(new JwtResponse(
                 user.getId(),
                 "Bearer "+token,
@@ -80,13 +70,13 @@ public class AuthController {
         );
     }
 
-    @PostMapping("/register")
-    public ResponseEntity<?> registerUser(@Valid @RequestBody RegisterRequest registerRequest) {
-        if (this.userService.existsByEmail(registerRequest.getEmail())) {
+    @PostMapping("/auth/register")
+    public ResponseEntity<?> registerUser(@Valid @RequestBody UserDto userDto) {
+        if (this.userService.existsByEmail(userDto.getEmail())) {
             return ResponseEntity.badRequest()
                     .body(new MessageResponse("E/R: Email is already exists!"));
         }
-        this.userService.saveUser(registerRequest);
+        this.userService.saveUser(userDto);
         return ResponseEntity.ok(new MessageResponse("User registered successfully!"));
     }
 }
